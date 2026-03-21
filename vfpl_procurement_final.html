@@ -468,7 +468,19 @@ function showTabById(id){
 }
 
 async function api(data){
-  const r=await fetch(WEBAPP,{method:'POST',body:JSON.stringify(data),headers:{'Content-Type':'application/json'}});
+  // Use GET for read operations, POST for writes
+  const reads=['verifyPIN','getItems','getVendors','getPRList','getRFQList','getCompare','getCompareList','getPOList','getGRNList','getDashboard'];
+  if(reads.includes(data.action)){
+    const params=new URLSearchParams(data).toString();
+    const r=await fetch(WEBAPP+'?'+params,{method:'GET'});
+    return r.json();
+  }
+  // Writes use no-cors workaround via form POST
+  const r=await fetch(WEBAPP,{
+    method:'POST',
+    body:JSON.stringify(data),
+    headers:{'Content-Type':'text/plain'}, // text/plain avoids CORS preflight
+  });
   return r.json();
 }
 
