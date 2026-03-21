@@ -107,7 +107,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .apphd{background:var(--or);padding:12px 14px;}
 .apphdtt{font-size:12px;font-weight:600;color:#fff;}
 .apphdst{font-size:10px;color:rgba(255,255,255,.7);margin-top:2px;}
-.dg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.dg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px;}
 .dt{background:var(--wh);border:1px solid var(--bd);border-radius:6px;padding:12px;}
 .dc{font-family:var(--mono);font-size:26px;font-weight:700;line-height:1;}
 .dl{font-size:10px;color:var(--mt);margin-top:4px;}
@@ -440,9 +440,58 @@ async function doLogin(){
 function setupTabs(){
   const tabs=RTABS[S.role]||RTABS.PR_RAISER;
   document.getElementById('tabBar').innerHTML=tabs.map((t,i)=>`<div class="tab${i===0?' on':''}" data-tab="${t.id}" onclick="showTab(this)">${t.lb}${t.bd?`<span class="bdg z" id="${t.bd}">0</span>`:''}</div>`).join('');
-  const el=document.getElementById('sec-raise');
-  if(el){el.innerHTML='';el.appendChild(buildPRForm());}
+  // Restore PR form (was replaced by login screen)
+  restorePRForm();
   showTabById(tabs[0].id);
+}
+
+function restorePRForm(){
+  const el=document.getElementById('sec-raise');
+  if(!el)return;
+  el.innerHTML=`<div class="card">
+    <div class="ch"><div class="ct">New Purchase Requisition</div><div class="cid" id="pr-preview">—</div></div>
+    <div class="cb">
+      <div class="g2">
+        <div class="fg"><label>Plant *</label>
+          <select id="f-plant"><option value="">Select</option><option>Markal (MKL)</option><option>Aurangabad (AUR)</option></select>
+        </div>
+        <div class="fg"><label>Department *</label>
+          <select id="f-dept"><option value="">Select</option><option>Production</option><option>Maintenance</option><option>Electrical</option><option>Quality</option><option>Store</option><option>Admin</option><option>Safety</option></select>
+        </div>
+      </div>
+      <div class="fg"><label>Category *</label><select id="f-cat" onchange="onCat()"><option value="">Select category</option></select></div>
+      <div class="fg"><label>Sub Category</label><select id="f-sub" onchange="onSub()"><option value="">Select category first</option></select></div>
+      <div class="fg"><label>Item *</label><select id="f-item" onchange="onItem()"><option value="">Select sub category first</option></select></div>
+      <div id="ni-sec" style="display:none;">
+        <div class="fg"><label>Describe item needed *</label><textarea id="f-newdesc" placeholder="Describe the item in detail…"></textarea></div>
+        <div class="fg"><label>Unit *</label>
+          <select id="f-newuom"><option value="">Select</option><option>NOS</option><option>KG</option><option>PAIR</option><option>LTR</option><option>MTR</option><option>BOX</option><option>SET</option><option>ROLL</option><option>HOUR</option><option>TON</option></select>
+        </div>
+      </div>
+      <div class="fg" id="uom-row" style="display:none;"><label>Unit (auto)</label><input class="ro" id="f-uom" readonly></div>
+      <div class="g2">
+        <div class="fg"><label>Quantity *</label><input type="number" id="f-qty" min="1" placeholder="0" inputmode="numeric"></div>
+        <div class="fg"><label>Required By *</label><input type="date" id="f-reqby"></div>
+      </div>
+      <div class="fg"><label>Urgency</label>
+        <div class="ug">
+          <div class="ub" id="ug-r" onclick="setUrg('RED',this)"><div class="ud" style="background:#E24B4A;"></div><div class="ul" style="color:#A32D2D;">Urgent</div><div class="us">Need now</div></div>
+          <div class="ub" id="ug-o" onclick="setUrg('ORANGE',this)"><div class="ud" style="background:#EF9F27;"></div><div class="ul" style="color:#854F0B;">Can wait</div><div class="us">Few days</div></div>
+          <div class="ub sy" id="ug-y" onclick="setUrg('YELLOW',this)"><div class="ud" style="background:#BA7517;"></div><div class="ul" style="color:#633806;">Regular</div><div class="us">Normal</div></div>
+        </div>
+      </div>
+      <div class="fg"><label>Remarks</label><textarea id="f-rem" placeholder="Brand preference, specifications…"></textarea></div>
+      <div style="margin-bottom:10px;"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;"><input type="checkbox" id="ni-cb" onchange="toggleNI()" style="width:16px;height:16px;"> Item not in our system — new item request</label></div>
+      <button class="btn bor" id="pr-submit-btn" onclick="openPRPin()">Confirm with PIN →</button>
+    </div>
+  </div>`;
+  // Re-populate category dropdown
+  const cat=document.getElementById('f-cat');
+  if(cat){cat.innerHTML='<option value="">Select category</option>'+Object.keys(SUBCATS).sort().map(c=>`<option>${c}</option>`).join('');}
+  // Set default date
+  const d=new Date();d.setDate(d.getDate()+3);
+  const rb=document.getElementById('f-reqby');if(rb)rb.value=d.toISOString().split('T')[0];
+  setUrg('YELLOW',document.getElementById('ug-y'));
 }
 
 function buildPRForm(){
