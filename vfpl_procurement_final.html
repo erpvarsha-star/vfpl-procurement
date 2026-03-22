@@ -584,6 +584,7 @@ function clearPR(){
 }
 
 // ── REVIEW ────────────────────────────────────────────────
+let prStore=[];
 async function loadReview(){
   const el=document.getElementById('reviewList');
   el.innerHTML='<div class="em">Loading…</div>';
@@ -591,8 +592,9 @@ async function loadReview(){
     const r=await api({action:'getPRs',status:'PENDING_REVIEW'});
     if(!r.ok||!r.prs.length){el.innerHTML='<div class="em">No PRs pending review</div>';setBdg('b-rev',0);return;}
     setBdg('b-rev',r.prs.length);
-    el.innerHTML=r.prs.map(pr=>`
-      <div class="pr-card ${pr.urgency==='RED'?'urg':pr.urgency==='ORANGE'?'med':''}" onclick="openRev(${JSON.stringify(JSON.stringify(pr))})">
+    prStore=r.prs;
+    el.innerHTML=r.prs.map((pr,idx)=>`
+      <div class="pr-card ${pr.urgency==='RED'?'urg':pr.urgency==='ORANGE'?'med':''}" onclick="openRev(${idx})">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
           <div>
             <div class="pr-num">${pr.prNum} · ${pr.date} · ${pr.plant} / ${pr.dept}</div>
@@ -606,8 +608,8 @@ async function loadReview(){
   }catch(e){el.innerHTML='<div class="em">Error loading. Tap refresh.</div>';}
 }
 let actPRdata=null;
-function openRev(prJson){
-  actPRdata=JSON.parse(prJson);
+function openRev(idx){
+  actPRdata=prStore[idx];
   document.getElementById('revShTt').textContent='Review — '+actPRdata.prNum;
   document.getElementById('revShBd').innerHTML=`
     <div class="idb">
