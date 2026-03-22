@@ -238,8 +238,45 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
   </select>
 </nav>
 
+<!-- ══════════════════════════════════════════
+     LOGIN — PIN SCREEN (shows on page load)
+══════════════════════════════════════════ -->
+<div id="loginScreen" style="display:none;position:fixed;inset:0;background:var(--paper);z-index:500;flex-direction:column;align-items:center;justify-content:center;padding:24px;">
+  <div style="width:100%;max-width:360px;">
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="width:52px;height:52px;background:var(--accent);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;font-weight:700;color:#fff;margin:0 auto 16px;">VF</div>
+      <div style="font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);">VFPL Procurement</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px;">Enter your PIN to continue</div>
+    </div>
+
+    <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:24px;">
+      <div style="font-family:var(--mono);font-size:36px;letter-spacing:.4em;text-align:center;padding:16px;background:var(--paper);border-radius:8px;margin-bottom:20px;min-height:68px;color:var(--ink);" id="loginPinDisplay">· · · ·</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <div onclick="loginKey('1')" style="background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:18px;font-size:22px;font-family:var(--mono);font-weight:500;text-align:center;cursor:pointer;">1</div>
+        <div onclick="loginKey('2')" style="background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:18px;font-size:22px;font-family:var(--mono);font-weight:500;text-align:center;cursor:pointer;">2</div>
+        <div onclick="loginKey('3')" style="background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:18px;font-size:22px;font-family:var(--mono);font-weight:500;text-align:center;cursor:pointer;">3</div>
+        <div onclick="loginKey('4')" style="background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:18px;font-size:22px;font-family:var(--mono);font-weight:500;text-align:center;cursor:pointer;">4</div>
+        <div onclick="loginKey('5')" style="background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:18px;font-size:22px;font-family:var(--mono);font-weight:500;text-align:center;cursor:pointer;">5</div>
+        <div onclick="loginKey('6')" style="background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:18px;font-size:22px;font-family:var(--mono);font-weight:500;text-align:center;cursor:pointer;">6</div>
+        <div onclick="loginKey('7')" style="background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:18px;font-size:22px;font-family:var(--mono);font-weight:500;text-align:center;cursor:pointer;">7</div>
+        <div onclick="loginKey('8')" style="background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:18px;font-size:22px;font-family:var(--mono);font-weight:500;text-align:center;cursor:pointer;">8</div>
+        <div onclick="loginKey('9')" style="background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:18px;font-size:22px;font-family:var(--mono);font-weight:500;text-align:center;cursor:pointer;">9</div>
+        <div onclick="loginKey('clear')" style="background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:18px;font-size:11px;font-family:var(--mono);font-weight:600;text-align:center;cursor:pointer;color:var(--muted);">CLR</div>
+        <div onclick="loginKey('0')" style="background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:18px;font-size:22px;font-family:var(--mono);font-weight:500;text-align:center;cursor:pointer;">0</div>
+        <div onclick="loginKey('del')" style="background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:18px;font-size:16px;font-family:var(--mono);text-align:center;cursor:pointer;">⌫</div>
+      </div>
+
+      <div style="color:var(--accent);font-size:12px;text-align:center;margin-top:12px;min-height:18px;" id="loginError"></div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px;font-size:10px;color:var(--muted);">Varsha Forgings Pvt Ltd · Procurement System</div>
+  </div>
+</div>
+
+
 <div class="tabs" id="tabBar">
-  <div class="tab on" data-tab="raise" onclick="showTab(this)">New PR</div>
+  <div class="tab" data-tab="raise" onclick="showTab(this)">New PR</div>
   <div class="tab" data-tab="review" onclick="showTab(this)">Review <span class="badge zero" id="b-review">0</span></div>
   <div class="tab" data-tab="rfq" onclick="showTab(this)">RFQ Status <span class="badge zero" id="b-rfq">0</span></div>
   <div class="tab" data-tab="compare" onclick="showTab(this)">Compare <span class="badge zero" id="b-cmp">0</span></div>
@@ -251,7 +288,7 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
 <!-- ══════════════════════════════════════════
      SCREEN 1 — RAISE PR
 ══════════════════════════════════════════ -->
-<div class="sec on" id="sec-raise">
+<div class="sec" id="sec-raise">
   <div class="card">
     <div class="card-h">
       <div class="card-title">New Purchase Requisition</div>
@@ -817,13 +854,79 @@ let verifiedUser = null; // set after PIN verified
 let itemCache = {}; // category → items array from sheet
 let currentPRData = {}; // PR being submitted
 
-// ── INIT ──────────────────────────────────────────────────
+// ── INIT — show PIN screen on load ────────────────────────
 (function init() {
   const d = new Date(); d.setDate(d.getDate() + 3);
   document.getElementById('f-reqby').value = d.toISOString().split('T')[0];
   setUrgency('YELLOW', document.getElementById('urg-yellow'));
-  refreshDashboard();
+
+  // Hide tabs and all sections — show PIN screen first
+  document.getElementById('tabBar').style.display = 'none';
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+
+  // Show the PIN login screen
+  document.getElementById('loginScreen').style.display = 'flex';
 })();
+
+// ── LOGIN PIN ENTRY ────────────────────────────────────────
+function loginKey(k) {
+  if (k === 'clear') { pinBuf = ''; }
+  else if (k === 'del') { pinBuf = pinBuf.slice(0, -1); }
+  else if (pinBuf.length < 4) { pinBuf += k; }
+  updateLoginDisplay();
+  if (pinBuf.length === 4) setTimeout(() => verifyLoginPin(), 200);
+}
+
+function updateLoginDisplay() {
+  const dots = '●'.repeat(pinBuf.length) + '·'.repeat(4 - pinBuf.length);
+  document.getElementById('loginPinDisplay').textContent = dots.split('').join(' ');
+}
+
+async function verifyLoginPin() {
+  document.getElementById('loginError').textContent = 'Verifying…';
+  try {
+    const result = await api({ action: 'verifyPin', pin: pinBuf });
+    if (result.ok) {
+      verifiedUser = result;
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('tabBar').style.display = 'flex';
+
+      // Route to correct screen based on role
+      const roleRoutes = {
+        'PO_APPROVER': 'approve',      // Yash
+        'PURCHASE_MANAGER': 'compare', // Manager
+        'PURCHASE_OFFICER': 'review',  // Officer
+        'RAISER': 'raise'              // Anyone raising PR
+      };
+      const targetTab = roleRoutes[result.role] || 'raise';
+
+      // Activate correct tab
+      document.querySelectorAll('.tab').forEach(t => {
+        if (t.dataset.tab === targetTab) {
+          showTab(t);
+        }
+      });
+
+      // Update nav to show who is logged in
+      const navTitle = document.querySelector('.nav-title');
+      if (navTitle) navTitle.textContent = result.name + ' · ' + result.role.replace('_', ' ');
+
+      // Hide role switcher — role is now determined by PIN
+      const roleSelect = document.getElementById('roleSelect');
+      if (roleSelect) roleSelect.style.display = 'none';
+
+    } else {
+      document.getElementById('loginError').textContent = 'Incorrect PIN. Try again.';
+      pinBuf = '';
+      updateLoginDisplay();
+      setTimeout(() => document.getElementById('loginError').textContent = '', 3000);
+    }
+  } catch (err) {
+    document.getElementById('loginError').textContent = 'Connection error. Try again.';
+    pinBuf = '';
+    updateLoginDisplay();
+  }
+}
 
 // ── NAVIGATION ────────────────────────────────────────────
 function showTab(el) {
@@ -845,19 +948,42 @@ function switchRole() {
   role = document.getElementById('roleSelect').value;
 }
 
-// ── API HELPER ────────────────────────────────────────────
-async function api(params) {
-  const url = WEBAPP + '?' + new URLSearchParams(params);
-  const res = await fetch(url);
-  return await res.json();
+// ── API HELPER — JSONP to bypass CORS ────────────────────
+function api(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = 'cb_' + Math.random().toString(36).slice(2);
+    const timeout = setTimeout(() => {
+      delete window[cbName];
+      reject(new Error('Request timeout'));
+    }, 15000);
+
+    window[cbName] = function(data) {
+      clearTimeout(timeout);
+      delete window[cbName];
+      // remove script tag
+      const s = document.getElementById(cbName);
+      if (s) s.remove();
+      resolve(data);
+    };
+
+    params.callback = cbName;
+    const url = WEBAPP + '?' + new URLSearchParams(params);
+    const script = document.createElement('script');
+    script.id = cbName;
+    script.src = url;
+    script.onerror = () => {
+      clearTimeout(timeout);
+      delete window[cbName];
+      reject(new Error('Script load error'));
+    };
+    document.head.appendChild(script);
+  });
 }
 
 async function post(body) {
-  const res = await fetch(WEBAPP, {
-    method: 'POST',
-    body: JSON.stringify(body)
-  });
-  return await res.json();
+  // Apps Script POST also has CORS issues — encode as GET with action
+  // For write operations we use GET with all params
+  return api(body);
 }
 
 // ── CATEGORY → ITEMS (live from sheet) ───────────────────
