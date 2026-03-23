@@ -620,7 +620,31 @@ function openRev(idx){
       <div class="idr"><span class="idy">Plant / Dept</span><span class="idv">${actPRdata.plant} / ${actPRdata.dept}</span></div>
       <div class="idr"><span class="idy">Raised By</span><span class="idv">${actPRdata.raisedBy}</span></div>
       <div class="idr"><span class="idy">Urgency</span><span class="idv" style="color:${actPRdata.urgency==='RED'?'#dc2626':actPRdata.urgency==='ORANGE'?'#ea580c':'#ca8a04'};">${actPRdata.urgency}</span></div>
-    </div>`;
+    </div>
+    <div id="priceHistBox" style="margin-top:10px;padding:10px;background:#f8fafc;border:1px solid var(--border);border-radius:var(--r);font-size:11px;color:var(--muted);">Loading price history…</div>`;
+  document.getElementById('revSh').classList.add('on');
+  // Load price history async
+  api({action:'getItemPrice',itemCode:actPRdata.itemCode}).then(ph=>{
+    const box=document.getElementById('priceHistBox');
+    if(!box)return;
+    if(!ph.ok||!ph.lastRate){box.innerHTML='<span style="color:var(--muted)">No purchase history found for this item.</span>';return;}
+    const varColor=ph.variance>50?'#dc2626':ph.variance>20?'#ea580c':'#16a34a';
+    const watchHtml=ph.watchFlag&&ph.watchFlag.includes('HIGH')?`<span style="color:#dc2626;font-weight:600;"> ${ph.watchFlag}</span>`:'';
+    box.innerHTML=`
+      <div style="font-weight:600;color:var(--ink);margin-bottom:6px;">📊 Purchase History${watchHtml}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <div><div style="color:var(--muted);font-size:10px;">Last Purchased</div><div style="font-weight:600;color:var(--ink);font-size:13px;">₹${ph.lastRate}</div><div style="font-size:10px;color:var(--muted);">${ph.monthsAgo||''}</div></div>
+        <div><div style="color:var(--muted);font-size:10px;">Last Vendor</div><div style="font-weight:500;color:var(--ink);font-size:11px;">${ph.lastVendor||'—'}</div><div style="font-size:10px;color:var(--muted);">${ph.lastDate||''}</div></div>
+        <div><div style="color:var(--muted);font-size:10px;">Base Rate (Min)</div><div style="font-weight:600;color:#16a34a;font-size:13px;">${ph.baseRate?'₹'+ph.baseRate:'—'}</div></div>
+        <div><div style="color:var(--muted);font-size:10px;">Avg Rate</div><div style="font-weight:500;color:var(--ink);font-size:13px;">${ph.avgRate?'₹'+ph.avgRate:'—'}</div></div>
+        <div><div style="color:var(--muted);font-size:10px;">Orders This Year</div><div style="font-weight:500;color:var(--ink);font-size:13px;">${ph.orderCount||0}</div></div>
+        <div><div style="color:var(--muted);font-size:10px;">Rate Variance</div><div style="font-weight:600;color:${varColor};font-size:13px;">${ph.variance||0}%</div></div>
+      </div>`;
+  }).catch(()=>{
+    const box=document.getElementById('priceHistBox');
+    if(box)box.innerHTML='<span style="color:var(--muted)">Price history unavailable.</span>';
+  });
+}
   document.getElementById('revSh').classList.add('on');
 }
 async function doPRClose(){
@@ -699,7 +723,7 @@ async function loadCompare(){
         <div class="cmp-hd">
           <div style="font-family:var(--mono);font-size:12px;font-weight:600;">${cmp.rfqNum}</div>
           <div style="font-size:13px;margin-top:2px;">${cmp.itemDesc||'—'} · ${cmp.qty||''} ${cmp.uom||''}</div>
-          ${(cmp.quotes[0]?.lastPrice)?`<div style="font-size:10px;color:var(--muted);margin-top:4px;">Last purchase: ₹${cmp.quotes[0].lastPrice} · ${cmp.quotes[0].lastVendor||''}</div>`:''}
+          ${(cmp.quotes[0]?.lastPrice)?`<div style="margin-top:8px;padding:8px 10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:11px;"><span style="color:#15803d;font-weight:600;">📊 Last purchased:</span><span style="color:var(--ink);font-weight:600;margin-left:4px;">₹${cmp.quotes[0].lastPrice}</span><span style="color:var(--muted);margin-left:4px;">from ${cmp.quotes[0].lastVendor||'—'}</span><span style="display:block;margin-top:2px;color:var(--muted);">Current L1 ₹${cmp.quotes[0]?.rateExGST||'—'} — compare before selecting</span></div>`:''} 
         </div>
         <div class="cmp-body">${rows}</div>
         ${ai?`<div class="ai-box"><div class="ai-lbl">AI SUGGESTION</div><div class="ai-text">${ai}</div></div>`:''}
