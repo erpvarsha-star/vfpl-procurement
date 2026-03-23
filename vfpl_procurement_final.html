@@ -729,6 +729,7 @@ async function sendToYash(rfqNum,itemDesc){
 }
 
 // ── APPROVE ───────────────────────────────────────────────
+let approvalStore=[];
 async function loadApprove(){
   const el=document.getElementById('approveList');
   el.innerHTML='<div class="em">Loading…</div>';
@@ -736,8 +737,9 @@ async function loadApprove(){
     const r=await api({action:'getPendingApprovals'});
     if(!r.ok||!r.approvals.length){el.innerHTML='<div class="em">No approvals pending</div>';setBdg('b-app',0);return;}
     setBdg('b-app',r.approvals.length);
+    approvalStore=r.approvals;
     const rc=['r1','r2','r3'];const lc=['l1','l2','l3'];
-    el.innerHTML=r.approvals.map(appr=>`
+    el.innerHTML=r.approvals.map((appr,idx)=>`
       <div class="card">
         <div class="card-h"><div><div class="card-id">${appr.rfqNum}</div><div style="font-size:13px;font-weight:500;margin-top:2px;">${appr.itemDesc||''}</div></div><span class="chip chip-b">PENDING</span></div>
         <div class="card-b">
@@ -755,15 +757,15 @@ async function loadApprove(){
           ${(appr.quotes.find(q=>q.aiSuggestion)||{}).aiSuggestion?`<div class="ai-box" style="margin-top:10px;"><div class="ai-lbl">AI SUGGESTION</div><div class="ai-text">${appr.quotes.find(q=>q.aiSuggestion).aiSuggestion}</div></div>`:''}
           <div class="fg" style="margin-top:12px;"><label>Question for manager (leave blank to approve)</label><textarea id="yq-${appr.rfqNum.replace(/\//g,'_')}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-family:inherit;font-size:13px;min-height:56px;" placeholder="Type question if any…"></textarea></div>
           <div class="btn-row">
-            <button class="btn btn-g" onclick="approveYash(${JSON.stringify(JSON.stringify(appr))})">✓ Approve — Release PO</button>
-            <button class="btn btn-s" onclick="sendQ(${JSON.stringify(JSON.stringify(appr))})">Question →</button>
+            <button class="btn btn-g" onclick="approveYash(${idx})">✓ Approve — Release PO</button>
+            <button class="btn btn-s" onclick="sendQ(${idx})">Question →</button>
           </div>
         </div>
       </div>`).join('');
   }catch(e){el.innerHTML='<div class="em">Error. Tap refresh.</div>';}
 }
-async function approveYash(apprJson){
-  const appr=JSON.parse(apprJson);
+async function approveYash(idx){
+  const appr=approvalStore[idx];
   const sel=appr.quotes.find(q=>q.isSelected);
   if(!sel){toast('No vendor selected','err');return;}
   const poType=appr.itemCode?.startsWith('SER')?'SER':appr.itemCode?.startsWith('FA')?'AST':'CON';
@@ -775,8 +777,8 @@ async function approveYash(apprJson){
   if(r.ok){toast('PO Released: '+r.poNum+' · '+r.vendor,'ok');loadApprove();}
   else toast(r.error||'Failed','err');
 }
-async function sendQ(apprJson){
-  const appr=JSON.parse(apprJson);
+async function sendQ(idx){
+  const appr=approvalStore[idx];
   const key=appr.rfqNum.replace(/\//g,'_');
   const q=document.getElementById('yq-'+key)?.value;
   if(!q?.trim()){toast('Type your question first','err');return;}
