@@ -646,8 +646,6 @@ function openRev(idx){
     if(box)box.innerHTML='<span style="color:var(--muted)">Price history unavailable.</span>';
   });
 }
-  document.getElementById('revSh').classList.add('on');
-}
 async function doPRClose(){
   csh('revSh');
   const r=await api({action:'closePR',prNum:actPRdata.prNum,reason:'Stock available'});
