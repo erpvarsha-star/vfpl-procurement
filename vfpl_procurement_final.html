@@ -679,7 +679,7 @@ async function doHoldPR(){
   if(r.ok){toast('PR placed on hold','ok');loadReview();}
   else toast(r.error||'Failed','err');
 }
-function doPRClose(){
+async function doPRClose(){
   csh('revSh');
   const r=await api({action:'closePR',prNum:actPRdata.prNum,reason:'Stock available'});
   if(r.ok){toast('PR closed — stock available','ok');loadReview();}
