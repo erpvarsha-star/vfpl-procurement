@@ -2,8 +2,8 @@ html+='<div class="home-tile" data-sid="'+t.id+'" onclick="openSection(this.data
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0f0e0d">
 <title>VFPL Procurement</title>
@@ -220,11 +220,10 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
     border-radius: 10px;
   }
 
-  /* Larger tap targets for buttons */
-  .btn { 
+  /* Larger tap targets for content buttons only */
+  .btn:not(.pin-key) { 
     padding: 12px 16px; 
     font-size: 14px;
-    min-height: 44px;
   }
 
   /* KPI tiles — 2 col grid, larger numbers */
@@ -267,14 +266,6 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
 
   /* Login screen */
   #loginScreen { padding: 20px 16px; }
-  .pin-dots { gap: 10px; }
-  .pin-dot { width: 13px; height: 13px; }
-  .pin-pad { gap: 10px; }
-  .pin-key { 
-    width: 72px; height: 72px; 
-    font-size: 22px;
-    border-radius: 50%;
-  }
 
   /* Approve/Compare cards */
   .appr-card, .cmp-card { padding: 12px; }
@@ -311,7 +302,7 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
 .home-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .home-grid-hdr{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;}
 .home-tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 10px;cursor:pointer;position:relative;-webkit-tap-highlight-color:transparent;transition:transform .1s;}
-.home-tile:active{transform:scale(0.97);}
+.home-tile:active{opacity:.85;}
 .home-tile.home-dash{grid-column:1/-1;background:#1a1208;border:none;display:flex;justify-content:space-between;align-items:center;padding:13px 14px;}
 .tile-dot{position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:#D1D5DB;}
 .tile-icon-box{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:11px;font-weight:800;letter-spacing:.04em;}
@@ -2001,23 +1992,7 @@ function updateTileCounts(r){
   });
 }
 
-// Handle window resize — switch between mobile/desktop nav
-window.addEventListener('resize',function(){
-  if(!S.user)return;
-  if(window.innerWidth>600){
-    document.getElementById('homeGrid').style.display='none';
-    document.getElementById('backHomeBtn').style.display='none';
-    const tw=document.querySelector('.tabs-wrap');
-    if(tw)tw.style.display='';
-    const role=S.user.role;
-    setupTabs(role);
-  } else {
-    const tw=document.querySelector('.tabs-wrap');
-    if(tw)tw.style.display='none';
-    buildHomeGrid(S.user.role);
-    goHome();
-  }
-});
+// resize handler removed — caused PIN screen dancing on mobile keyboard open
 
 </script>
 
