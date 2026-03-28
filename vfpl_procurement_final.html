@@ -152,6 +152,11 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
 .em{text-align:center;padding:40px 16px;color:var(--muted);}
 /* LOGIN */
 #loginScreen{display:none;position:fixed;inset:0;background:var(--paper);z-index:500;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+
+.pipe-stage{flex:1;min-width:60px;border:1.5px solid;border-radius:var(--r);padding:8px 6px;text-align:center;cursor:pointer;transition:opacity .2s;}
+.pipe-stage:active{opacity:.7;}
+.pipe-n{font-size:20px;font-weight:700;line-height:1;}
+.pipe-l{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-top:3px;}
 </style>
 <link rel="manifest" id="pwa-manifest">
 <meta name="apple-mobile-web-app-title" content="VFPL PRO">
@@ -403,6 +408,112 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
   </div>
 </div>
 
+
+<!-- QC PENDING -->
+<div class="sec" id="sec-qc">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <div style="font-size:13px;font-weight:600;">Pending Quality Check</div>
+    <button class="btn btn-s btn-sm" onclick="loadQC()">↻ Refresh</button>
+  </div>
+  <div id="qcList"><div class="em">Loading…</div></div>
+</div>
+
+<!-- QC HISTORY -->
+<div class="sec" id="sec-qchistory">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <div style="font-size:13px;font-weight:600;">Quality Check History</div>
+    <button class="btn btn-s btn-sm" onclick="loadQCHistory()">↻ Refresh</button>
+  </div>
+  <div id="qcHistoryList"><div class="em">Loading…</div></div>
+</div>
+
+<!-- INVOICE UPLOAD -->
+<div class="sec" id="sec-invoice">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <div style="font-size:13px;font-weight:600;">Upload Invoice</div>
+    <button class="btn btn-s btn-sm" onclick="loadPendingInvoices()">↻ Refresh</button>
+  </div>
+  <div id="invoiceList"><div class="em">Loading…</div></div>
+</div>
+
+<!-- MY GRNs -->
+<div class="sec" id="sec-mygrns">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <div style="font-size:13px;font-weight:600;">My GRN History</div>
+    <button class="btn btn-s btn-sm" onclick="loadMyGRNs()">↻ Refresh</button>
+  </div>
+  <div id="myGRNList"><div class="em">Loading…</div></div>
+</div>
+
+<!-- QC REJECT SHEET -->
+<div class="sh-bg" id="qcRejectSh">
+  <div class="sh">
+    <div class="sh-drag"></div>
+    <div class="sh-title">Reject Material — Quality Failure</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Vendor will be notified by email. Officer will also be notified.</p>
+    <div class="fg">
+      <label>Reason for Rejection</label>
+      <select id="qc-reason">
+        <option value="">Select reason…</option>
+        <option value="Material damaged in transit">Material damaged in transit</option>
+        <option value="Wrong specification / grade">Wrong specification / grade</option>
+        <option value="Short quantity received">Short quantity received</option>
+        <option value="Wrong item delivered">Wrong item delivered</option>
+        <option value="Poor finish / surface quality">Poor finish / surface quality</option>
+        <option value="Dimension out of tolerance">Dimension out of tolerance</option>
+        <option value="Material not as per approved sample">Not as per approved sample</option>
+        <option value="Other">Other (describe below)</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Additional Details</label>
+      <textarea id="qc-remarks" placeholder="Describe the defect in detail…" style="min-height:56px;"></textarea>
+    </div>
+    <div class="fg">
+      <label>Photo Evidence (optional)</label>
+      <div style="border:2px dashed #ddd;border-radius:var(--r);padding:16px;text-align:center;cursor:pointer;" onclick="document.getElementById('qc-photo-input').click()">
+        <div id="qc-photo-preview" style="font-size:12px;color:var(--muted);">📷 Tap to capture / select photo</div>
+        <input type="file" id="qc-photo-input" accept="image/*" capture="environment" style="display:none" onchange="previewQCPhoto(this)">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-s" onclick="csh('qcRejectSh')">Cancel</button>
+      <button class="btn" style="flex:2;background:#DC2626;color:#fff;" onclick="submitQCReject()">Send Rejection & Notify Vendor</button>
+    </div>
+  </div>
+</div>
+
+<!-- INVOICE ENTRY SHEET -->
+<div class="sh-bg" id="invoiceSh">
+  <div class="sh">
+    <div class="sh-drag"></div>
+    <div class="sh-title">Upload Invoice</div>
+    <div id="inv-po-info" style="background:#f5f5f0;border-radius:var(--r);padding:10px 12px;margin-bottom:14px;font-size:12px;"></div>
+    <div class="g2">
+      <div class="fg">
+        <label>Invoice Number <span style="color:#DC2626;">*</span></label>
+        <input type="text" id="inv-number" placeholder="e.g. INV/2526/1234">
+      </div>
+      <div class="fg">
+        <label>Invoice Amount (₹) <span style="color:#DC2626;">*</span></label>
+        <input type="number" id="inv-amount" placeholder="0.00" step="0.01">
+      </div>
+    </div>
+    <div class="fg">
+      <label>Invoice Photo <span style="color:#DC2626;">*</span></label>
+      <div style="border:2px dashed #ddd;border-radius:var(--r);padding:16px;text-align:center;cursor:pointer;" onclick="document.getElementById('inv-photo-input').click()">
+        <div id="inv-photo-preview" style="font-size:12px;color:var(--muted);">📷 Tap to capture invoice photo</div>
+        <input type="file" id="inv-photo-input" accept="image/*" capture="environment" style="display:none" onchange="previewInvPhoto(this)">
+      </div>
+    </div>
+    <div id="inv-match-warning" style="display:none;padding:10px 12px;background:#FEF3C7;border:1px solid #F59E0B;border-radius:var(--r);font-size:12px;color:#92400E;margin-bottom:12px;"></div>
+    <div class="btn-row">
+      <button class="btn btn-s" onclick="csh('invoiceSh')">Cancel</button>
+      <button class="btn btn-b" style="flex:2;" id="invSubmitBtn" onclick="submitInvoice()">Submit Invoice</button>
+    </div>
+  </div>
+</div>
+
 <!-- PIN OVERLAY -->
 <div class="pin-overlay" id="pinO">
   <div class="pin-sheet">
@@ -480,9 +591,11 @@ const LOGO='data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJT
 const ROLE_TABS={
   RAISER:[{id:'raise',lb:'New PR'},{id:'myprs',lb:'My PRs'},{id:'dashboard',lb:'Dashboard'}],
   PR_RAISER:[{id:'raise',lb:'New PR'},{id:'myprs',lb:'My PRs'},{id:'dashboard',lb:'Dashboard'}],
-  PURCHASE_OFFICER:[{id:'review',lb:'Review PRs',bd:'b-rev'},{id:'rfq',lb:'RFQ Status',bd:'b-rfq'},{id:'grn',lb:'GRN Entry',bd:'b-grn'},{id:'pos',lb:'All POs'},{id:'dashboard',lb:'Dashboard'}],
+  PURCHASE_OFFICER:[{id:'review',lb:'Review PRs',bd:'b-rev'},{id:'rfq',lb:'RFQ Status',bd:'b-rfq'},{id:'compare',lb:'Compare',bd:'b-cmp'},{id:'grn',lb:'GRN Entry',bd:'b-grn'},{id:'invoice',lb:'Invoices',bd:'b-inv'},{id:'pos',lb:'All POs'},{id:'dashboard',lb:'Dashboard'}],
   PURCHASE_MANAGER:[{id:'compare',lb:'Compare',bd:'b-cmp'},{id:'rfq',lb:'RFQ Status'},{id:'pos',lb:'All POs'},{id:'dashboard',lb:'Dashboard'}],
-  PO_APPROVER:[{id:'approve',lb:'Approve',bd:'b-app'},{id:'compare',lb:'Compare'},{id:'review',lb:'Review PRs'},{id:'rfq',lb:'RFQ Status'},{id:'grn',lb:'GRN Entry'},{id:'pos',lb:'All POs'},{id:'dashboard',lb:'Dashboard'}],
+  PO_APPROVER:[{id:'approve',lb:'Approve',bd:'b-app'},{id:'compare',lb:'Compare'},{id:'review',lb:'Review PRs'},{id:'rfq',lb:'RFQ Status'},{id:'grn',lb:'GRN Entry'},{id:'invoice',lb:'Invoices',bd:'b-inv'},{id:'pos',lb:'All POs'},{id:'dashboard',lb:'Dashboard'}],
+  GRN_GATE:[{id:'grn',lb:'GRN Entry',bd:'b-grn'},{id:'invoice',lb:'Invoices',bd:'b-inv'},{id:'mygrns',lb:'My GRNs'},{id:'dashboard',lb:'Dashboard'}],
+  QUALITY:[{id:'qc',lb:'QC Pending',bd:'b-qc'},{id:'qchistory',lb:'QC History'}],
 };
 
 let S={urg:'YELLOW',pin:null,user:null,actPR:null,actPO:null,actPOQty:null,actPOUOM:null,grnPhoto:'',pAction:null,pBuf:'',lBuf:'',vToken:null,vRFQ:null,vVendor:null,itemCache:{}};
@@ -560,7 +673,7 @@ function showTab(el){
   el.classList.add('on');
   const id=el.dataset.tab;
   document.getElementById('sec-'+id)?.classList.add('on');
-  const map={review:loadReview,rfq:loadRFQ,compare:loadCompare,approve:loadApprove,grn:loadGRN,pos:loadPOs,dashboard:loadDashboard};
+  const map={review:loadReview,rfq:loadRFQ,compare:loadCompare,approve:loadApprove,grn:loadGRN,pos:loadPOs,dashboard:loadDashboard,myprs:loadMyPRs,qc:loadQC,qchistory:loadQCHistory,invoice:loadPendingInvoices,mygrns:loadMyGRNs};
   if(map[id])map[id]();
 }
 function showTabById(id){
@@ -1055,7 +1168,11 @@ async function loadGRN(){
     const r=await api({action:'getPOsForGRN'});
     if(!r.ok||!r.pos.length){el.innerHTML='<div class="em">No POs pending delivery</div>';setBdg('b-grn',0);return;}
     setBdg('b-grn',r.pos.length);
-    el.innerHTML=r.pos.map(po=>{
+    const stC={'PO_ISSUED':'chip-b','GOODS_RECEIVED':'chip-o','QC_PASSED':'chip-p','QC_FAILED':'chip-r','INVOICE_RECEIVED':'chip-y','CLOSED':'chip-g','COMPLETED':'chip-g','PARTIAL_DELIVERY':'chip-y'};
+    const stL={'PO_ISSUED':'Issued','GOODS_RECEIVED':'GRN Done','QC_PASSED':'QC Passed','QC_FAILED':'QC Failed','INVOICE_RECEIVED':'Invoice In','CLOSED':'Closed','COMPLETED':'Completed','PARTIAL_DELIVERY':'Partial'};
+    const poList=S.poStatusFilter?r.pos.filter(p=>p.status===S.poStatusFilter):r.pos;
+    S.poStatusFilter=null;
+    el.innerHTML=poList.map(po=>{
       const pq=parseFloat(po.qty)||0;
       const rcvd=parseFloat(po.receivedQty)||0;
       const bal=Math.max(0,pq-rcvd);
@@ -1135,12 +1252,32 @@ async function loadDashboard(){
     const r=await api({action:'getDashboard'});
     if(!r.ok)return;
     const c=r.counts;
-    document.getElementById('dashTiles').innerHTML=[
+    const role=S.user&&S.user.role||'';
+    const tiles=[
       {n:c.prPending,lb:'PRs pending review',col:'var(--accent2)'},
       {n:c.rfqActive,lb:'RFQs active',col:'var(--amber)'},
       {n:c.pendingApproval,lb:'Awaiting approval',col:'var(--accent)'},
-      {n:c.posThisMonth,lb:'POs this month',col:'var(--green)'},
-    ].map(t=>`<div class="dt"><div class="dc" style="color:${t.col};">${t.n||0}</div><div class="dl">${t.lb}</div><div class="db" style="background:${t.col};opacity:.3;"></div></div>`).join('');
+    ];
+    if(['QUALITY','PURCHASE_OFFICER','PO_APPROVER'].includes(role)&&(c.qcPending||0)>0)
+      tiles.push({n:c.qcPending,lb:'QC pending',col:'#F59E0B'});
+    if((c.invoicesPending||0)>0)
+      tiles.push({n:c.invoicesPending,lb:'Invoices pending',col:'#7C3AED'});
+    if(['PO_APPROVER','PURCHASE_MANAGER'].includes(role)&&(c.paymentDue||0)>0)
+      tiles.push({n:c.paymentDue,lb:'Payments due',col:'#DC2626'});
+    document.getElementById('dashTiles').innerHTML=tiles
+      .map(t=>`<div class="dt"><div class="dc" style="color:${t.col};">${t.n||0}</div><div class="dl">${t.lb}</div><div class="db" style="background:${t.col};opacity:.3;"></div></div>`).join('');
+    // Pipeline strip
+    if(r.pipeline&&['PURCHASE_OFFICER','PURCHASE_MANAGER','PO_APPROVER','GRN_GATE'].includes(role)){
+      const pp=document.getElementById('poPipeline');
+      if(pp){
+        pp.style.display='';
+        document.getElementById('pipe-n-issued').textContent=r.pipeline.poIssued||0;
+        document.getElementById('pipe-n-grn').textContent=r.pipeline.goodsReceived||0;
+        document.getElementById('pipe-n-qc').textContent=r.pipeline.qcPassed||0;
+        document.getElementById('pipe-n-inv').textContent=r.pipeline.invoiceReceived||0;
+        document.getElementById('pipe-n-closed').textContent=r.pipeline.posClosed||0;
+      }
+    }
     const feed=r.feed||[];
     const dc={po:'var(--green)',pr:'var(--accent)',rfq:'var(--accent2)'};
     document.getElementById('actFeed').innerHTML=feed.length?
@@ -1285,6 +1422,228 @@ function checkConsolidation(approvals){
   const multi=Object.values(vmap).filter(v=>v.rfqs.length>=2);
   return multi.length>0?multi:null;
 }
+
+
+// ── QC FUNCTIONS ────────────────────────────────────────────
+let actQCItem = null;
+
+async function loadQC(){
+  const el=document.getElementById('qcList');
+  if(!el)return;
+  el.innerHTML='<div class="em">Loading…</div>';
+  try{
+    const r=await api({action:'getPendingQC'});
+    setBdg('b-qc', (r.grns||[]).length);
+    if(!(r.grns||[]).length){el.innerHTML='<div class="em">No items pending quality check</div>';return;}
+    el.innerHTML=(r.grns||[]).map((g,i)=>`
+      <div class="pr-card" style="cursor:pointer;" onclick="openQCItem(${i})">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div class="pr-num">${g.grnNum} · GRN ${g.grnDate}</div>
+            <div class="pr-desc">${g.itemDesc}</div>
+            <div class="pr-meta">PO: ${g.poNum} · ${g.rcvdQty} ${g.poQty?'of '+g.poQty:''} · ${g.vendorName}</div>
+          </div>
+          <span class="chip chip-y">QC Pending</span>
+        </div>
+        ${g.photoLink?`<div style="margin-top:8px;"><a href="${g.photoLink}" target="_blank" style="font-size:11px;color:#3B82F6;">📷 View GRN Photo</a></div>`:''}
+        <div class="btn-row" style="margin-top:10px;">
+          <button class="btn btn-s" style="background:#15803D;color:#fff;flex:1;" onclick="event.stopPropagation();doQCApprove('${g.grnNum}','${g.poNum}')">✓ Pass</button>
+          <button class="btn btn-s" style="background:#DC2626;color:#fff;flex:1;" onclick="event.stopPropagation();openQCReject('${g.grnNum}','${g.poNum}')">✗ Reject</button>
+        </div>
+      </div>`).join('');
+    S.qcItems = r.grns;
+  }catch(e){el.innerHTML='<div class="em">Error. Tap refresh.</div>';}
+}
+
+function openQCItem(idx){
+  // Future: open detail modal
+}
+
+async function doQCApprove(grnNum, poNum){
+  if(!confirm('Confirm: Material PASSED quality check?'))return;
+  toast('Recording QC pass…','ok');
+  try{
+    const r=await api({action:'recordQC',grnNum,poNum,decision:'PASS',qcBy:S.user&&S.user.name||'Quality'});
+    if(r.ok){toast('QC Passed — PO ready for invoice','ok');loadQC();loadDashboard();}
+    else toast(r.error||'Failed','err');
+  }catch(e){toast('Error','err');}
+}
+
+function openQCReject(grnNum, poNum){
+  S.actQCGRN = grnNum;
+  S.actQCPO  = poNum;
+  document.getElementById('qc-reason').value='';
+  document.getElementById('qc-remarks').value='';
+  document.getElementById('qc-photo-preview').textContent='📷 Tap to capture / select photo';
+  S.qcPhotoData='';
+  document.getElementById('qcRejectSh').classList.add('on');
+}
+
+function previewQCPhoto(input){
+  if(!input.files||!input.files[0])return;
+  const file=input.files[0];
+  const reader=new FileReader();
+  reader.onload=e=>{
+    S.qcPhotoData=e.target.result;
+    document.getElementById('qc-photo-preview').innerHTML=`<img src="${e.target.result}" style="max-height:120px;border-radius:6px;">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function submitQCReject(){
+  const reason=document.getElementById('qc-reason').value;
+  const remarks=document.getElementById('qc-remarks').value;
+  if(!reason){toast('Select a rejection reason','err');return;}
+  const fullReason = remarks ? reason+' — '+remarks : reason;
+  toast('Sending rejection…','ok');
+  csh('qcRejectSh');
+  try{
+    const r=await api({action:'recordQC',
+      grnNum:S.actQCGRN, poNum:S.actQCPO,
+      decision:'FAIL', reason:fullReason,
+      qcBy:S.user&&S.user.name||'Quality',
+      qcPhotoData:S.qcPhotoData||''
+    });
+    if(r.ok){toast('Rejection recorded. Vendor & Officer notified.','ok');loadQC();loadDashboard();}
+    else toast(r.error||'Failed','err');
+  }catch(e){toast('Error','err');}
+}
+
+async function loadQCHistory(){
+  const el=document.getElementById('qcHistoryList');
+  if(!el)return;
+  el.innerHTML='<div class="em">Loading…</div>';
+  try{
+    const r=await api({action:'getPendingQC',status:'all'});
+    if(!(r.grns||[]).length){el.innerHTML='<div class="em">No QC records yet</div>';return;}
+    el.innerHTML=(r.grns||[]).map(g=>`
+      <div class="pr-card">
+        <div style="display:flex;justify-content:space-between;">
+          <div>
+            <div class="pr-num">${g.grnNum} · ${g.grnDate}</div>
+            <div class="pr-desc">${g.itemDesc}</div>
+            <div class="pr-meta">${g.vendorName} · ${g.rcvdQty} received</div>
+          </div>
+          <span class="chip ${g.status==='QC_PASSED'?'chip-g':g.status==='QC_FAILED'?'chip-r':'chip-y'}">${g.status==='QC_PASSED'?'Passed':g.status==='QC_FAILED'?'Failed':'Pending'}</span>
+        </div>
+      </div>`).join('');
+  }catch(e){el.innerHTML='<div class="em">Error loading history</div>';}
+}
+
+// ── INVOICE FUNCTIONS ────────────────────────────────────────
+let actInvPO = null;
+
+async function loadPendingInvoices(){
+  const el=document.getElementById('invoiceList');
+  if(!el)return;
+  el.innerHTML='<div class="em">Loading…</div>';
+  try{
+    const r=await api({action:'getPendingInvoices'});
+    setBdg('b-inv',(r.pending||[]).length);
+    setBdg('kpi-inv',(r.pending||[]).length);
+    if(!(r.pending||[]).length){el.innerHTML='<div class="em">No invoices pending</div>';return;}
+    el.innerHTML=(r.pending||[]).map(p=>`
+      <div class="pr-card ${p.overdue?'urg':''}" style="cursor:pointer;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+          <div>
+            <div class="pr-num">${p.poNum} · ${p.poDate}</div>
+            <div class="pr-desc">${p.itemDesc}</div>
+            <div class="pr-meta">${p.vendorName} · ₹${Number(p.totalAmt||0).toLocaleString('en-IN')}</div>
+          </div>
+          ${p.overdue?'<span class="chip chip-r">'+p.daysSinceGRN+'d overdue</span>':'<span class="chip chip-p">QC Passed</span>'}
+        </div>
+        ${p.overdue?'<div style="font-size:11px;color:#DC2626;margin-bottom:8px;">⚠️ GRN done '+p.daysSinceGRN+' days ago — invoice not received</div>':''}
+        <button class="btn btn-b btn-sm" style="width:100%;" onclick="openInvoiceUpload('${p.poNum}','${p.vendorName}',${p.totalAmt||0})">Upload Invoice</button>
+      </div>`).join('');
+  }catch(e){el.innerHTML='<div class="em">Error. Tap refresh.</div>';}
+}
+
+function openInvoiceUpload(poNum, vendorName, poAmt){
+  S.actInvPO   = poNum;
+  S.actInvAmt  = poAmt;
+  document.getElementById('inv-number').value='';
+  document.getElementById('inv-amount').value='';
+  document.getElementById('inv-photo-preview').textContent='📷 Tap to capture invoice photo';
+  document.getElementById('inv-match-warning').style.display='none';
+  S.invPhotoData='';
+  const info=document.getElementById('inv-po-info');
+  if(info)info.innerHTML=`<strong>${poNum}</strong> — ${vendorName}<br>PO Amount: <strong>₹${Number(poAmt).toLocaleString('en-IN')}</strong>`;
+  document.getElementById('invoiceSh').classList.add('on');
+}
+
+function previewInvPhoto(input){
+  if(!input.files||!input.files[0])return;
+  const file=input.files[0];
+  const reader=new FileReader();
+  reader.onload=e=>{
+    S.invPhotoData=e.target.result;
+    document.getElementById('inv-photo-preview').innerHTML=`<img src="${e.target.result}" style="max-height:120px;border-radius:6px;">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const invAmt=document.getElementById('inv-amount');
+  if(invAmt){
+    invAmt.addEventListener('input',()=>{
+      const entered=parseFloat(invAmt.value)||0;
+      const poAmt=S.actInvAmt||0;
+      const warn=document.getElementById('inv-match-warning');
+      if(!warn||!poAmt)return;
+      const diff=Math.abs(entered-poAmt)/poAmt*100;
+      if(diff>2){
+        warn.style.display='';
+        warn.textContent=`⚠️ Invoice amount ₹${entered.toLocaleString('en-IN')} differs from PO amount ₹${Number(poAmt).toLocaleString('en-IN')} by ${diff.toFixed(1)}%. This will be flagged for review.`;
+      }else{
+        warn.style.display='none';
+      }
+    });
+  }
+});
+
+async function submitInvoice(){
+  const invNum=document.getElementById('inv-number').value.trim();
+  const invAmt=document.getElementById('inv-amount').value;
+  if(!invNum){toast('Enter invoice number','err');return;}
+  if(!invAmt||parseFloat(invAmt)<=0){toast('Enter invoice amount','err');return;}
+  if(!S.invPhotoData){toast('Invoice photo is required','err');return;}
+  const btn=document.getElementById('invSubmitBtn');
+  if(btn){btn.disabled=true;btn.textContent='Uploading…';}
+  csh('invoiceSh');
+  try{
+    const r=await api({action:'uploadInvoice',
+      poNum:S.actInvPO,
+      invoiceNumber:invNum,
+      invoiceAmount:parseFloat(invAmt),
+      photoData:S.invPhotoData,
+      uploadedBy:S.user&&S.user.name||'Officer'
+    });
+    if(r.ok){toast('Invoice uploaded — PO closed','ok');loadPendingInvoices();loadDashboard();}
+    else toast(r.error||'Failed','err');
+  }catch(e){toast('Error uploading invoice','err');}
+  finally{if(btn){btn.disabled=false;btn.textContent='Submit Invoice';}}
+}
+
+// ── MY GRNs ──────────────────────────────────────────────────
+async function loadMyGRNs(){
+  const el=document.getElementById('myGRNList');
+  if(!el)return;
+  el.innerHTML='<div class="em">Loading…</div>';
+  try{
+    const r=await api({action:'getPOsForGRN',status:'all'});
+    el.innerHTML='<div class="em">GRN history coming soon</div>';
+  }catch(e){el.innerHTML='<div class="em">Error</div>';}
+}
+
+// ── PO STATUS FILTER ─────────────────────────────────────────
+function filterPOsByStatus(status){
+  showTabById('pos');
+  S.poStatusFilter=status;
+  loadPOs();
+}
+
+// ── UPDATE loadPOs to show status pipeline column ─────────────
+// (handled in loadPOs update below — status chip added to each row)
 
 </script>
 
