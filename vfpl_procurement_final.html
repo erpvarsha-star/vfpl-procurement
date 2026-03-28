@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0f0e0d">
@@ -157,6 +158,138 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
 .pipe-stage:active{opacity:.7;}
 .pipe-n{font-size:20px;font-weight:700;line-height:1;}
 .pipe-l{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-top:3px;}
+
+/* ══ RESPONSIVE — MOBILE FIRST ══════════════════════════════ */
+
+/* Base mobile improvements */
+@media (max-width: 600px) {
+  /* Body text slightly larger for readability */
+  body { font-size: 15px; }
+
+  /* NAV — compact on mobile */
+  .nav { height: 48px; padding: 0 10px; }
+
+  /* Hide "PROCUREMENT" text on mobile — logo is enough */
+  .nav-brand span { display: none; }
+
+  /* User name — show initials only on mobile */
+  .nav-user { 
+    font-size: 11px; 
+    padding: 4px 7px; 
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Logo slightly smaller */
+  .nav-logo img { width: 28px !important; height: 28px !important; }
+
+  /* TAB BAR — larger touch targets on mobile */
+  .tabs { top: 48px; }
+  .tab { 
+    padding: 13px 11px; 
+    font-size: 10px;
+    min-width: 0;
+  }
+
+  /* MAIN content — less side padding */
+  .main { padding: 12px 10px; }
+  .sec { padding: 0; }
+
+  /* CARDS — full width, better touch */
+  .pr-card { 
+    padding: 14px 12px; 
+    margin-bottom: 10px;
+    border-radius: 10px;
+  }
+
+  /* Larger tap targets for buttons */
+  .btn { 
+    padding: 12px 16px; 
+    font-size: 14px;
+    min-height: 44px;
+  }
+
+  /* KPI tiles — 2 col grid, larger numbers */
+  #dashTiles { 
+    grid-template-columns: 1fr 1fr !important; 
+    gap: 8px;
+  }
+  .dt { padding: 14px 10px; }
+  .dc { font-size: 28px !important; }
+  .dl { font-size: 11px; }
+
+  /* Pipeline strip — scrollable, bigger tap areas */
+  .pipe-stage { 
+    min-width: 62px; 
+    padding: 10px 6px;
+  }
+  .pipe-n { font-size: 22px; }
+  .pipe-l { font-size: 9px; }
+
+  /* Form inputs — larger on mobile */
+  input, select, textarea { 
+    font-size: 16px !important; /* prevents iOS zoom */
+    padding: 11px 12px !important;
+    min-height: 44px;
+  }
+
+  /* Bottom sheets — full width */
+  .sh { border-radius: 20px 20px 0 0; }
+
+  /* KPI grid — 2 col on mobile */
+  .g2 { grid-template-columns: 1fr 1fr; }
+
+  /* PR cards text sizes */
+  .pr-num { font-size: 11px; }
+  .pr-desc { font-size: 14px; font-weight: 600; }
+  .pr-meta { font-size: 12px; }
+
+  /* Chip — slightly larger on mobile */
+  .chip { font-size: 10px; padding: 3px 7px; }
+
+  /* Login screen */
+  #loginScreen { padding: 20px 16px; }
+  .pin-dots { gap: 10px; }
+  .pin-dot { width: 13px; height: 13px; }
+  .pin-pad { gap: 10px; }
+  .pin-key { 
+    width: 72px; height: 72px; 
+    font-size: 22px;
+    border-radius: 50%;
+  }
+
+  /* Approve/Compare cards */
+  .appr-card, .cmp-card { padding: 12px; }
+
+  /* Section titles */
+  .sec > div:first-child { font-size: 13px; }
+}
+
+/* TABLET — 601–900px */
+@media (min-width: 601px) and (max-width: 900px) {
+  body { font-size: 15px; }
+  .main { padding: 16px 20px; }
+  .tab { font-size: 11px; padding: 12px 12px; }
+}
+
+/* DESKTOP — 901px+ */
+@media (min-width: 901px) {
+  body { font-size: 14px; }
+  .main { 
+    max-width: 720px; 
+    margin: 0 auto; 
+    padding: 20px 24px;
+  }
+  /* On desktop, show full nav brand */
+  .nav-brand span { display: inline; }
+  /* Desktop: login screen centered card */
+  #loginScreen { 
+    justify-content: center;
+  }
+}
+
 </style>
 <link rel="manifest" id="pwa-manifest">
 <meta name="apple-mobile-web-app-title" content="VFPL PRO">
