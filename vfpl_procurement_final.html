@@ -773,7 +773,7 @@ const ROLE_TABS={
   QUALITY:[{id:'qc',lb:'QC Pending',bd:'b-qc'},{id:'qchistory',lb:'QC History'}],
 };
 
-let S={urg:'YELLOW',pin:null,user:null,actPR:null,actPO:null,actPOQty:null,actPOUOM:null,grnPhoto:'',pAction:null,pBuf:'',lBuf:'',vToken:null,vRFQ:null,vVendor:null,itemCache:{}};
+let S={mobileMode:false,urg:'YELLOW',pin:null,user:null,actPR:null,actPO:null,actPOQty:null,actPOUOM:null,grnPhoto:'',pAction:null,pBuf:'',lBuf:'',vToken:null,vRFQ:null,vVendor:null,itemCache:{}};
 
 // Set logo everywhere
 document.getElementById('navImg').src=LOGO;
@@ -821,7 +821,8 @@ async function doLogin(){
       document.getElementById('loginScreen').style.display='none';
       document.getElementById('navUser').textContent=r.name;
       setupTabs(r.role);
-      if(window.innerWidth<=600){buildHomeGrid(r.role);goHome();}
+      S.mobileMode=(window.innerWidth<=600||('ontouchstart' in window&&window.innerWidth<=900));
+      if(S.mobileMode){buildHomeGrid(r.role);goHome();}
       toast('Welcome, '+r.name,'ok');
     }else{
       document.getElementById('lE').textContent='Incorrect PIN — try again';
@@ -855,7 +856,7 @@ function showTab(el){
   if(map[id])map[id]();
 }
 function showTabById(id){
-  if(window.innerWidth<=600){openSection(id);return;}
+  if(S.mobileMode){openSection(id);return;}
   const el=document.querySelector('[data-tab="'+id+'"]');
   if(el)showTab(el);else document.getElementById('sec-'+id)?.classList.add('on');
 }
@@ -1433,9 +1434,9 @@ async function loadDashboard(){
     const c=r.counts;
     const role=S.user&&S.user.role||'';
     const tiles=[
-      {n:c.prPending,lb:'PRs pending review',col:'var(--accent2)'},
-      {n:c.rfqActive,lb:'RFQs active',col:'var(--amber)'},
-      {n:c.pendingApproval,lb:'Awaiting approval',col:'var(--accent)'},
+      {n:c.prPending||0,   lb:'PRs pending',     col:'var(--accent2)', clickId:'review'},
+      {n:c.rfqActive||0,   lb:'RFQs active',     col:'var(--amber)',   clickId:'rfq'},
+      {n:c.pendingApproval||0, lb:'Awaiting approval', col:'var(--accent)', clickId:'approve'},
     ];
     if(['QUALITY','PURCHASE_OFFICER','PO_APPROVER'].includes(role)&&(c.qcPending||0)>0)
       tiles.push({n:c.qcPending,lb:'QC pending',col:'#F59E0B'});
@@ -1444,7 +1445,7 @@ async function loadDashboard(){
     if(['PO_APPROVER','PURCHASE_MANAGER'].includes(role)&&(c.paymentDue||0)>0)
       tiles.push({n:c.paymentDue,lb:'Payments due',col:'#DC2626'});
     document.getElementById('dashTiles').innerHTML=tiles
-      .map(t=>`<div class="dt"><div class="dc" style="color:${t.col};">${t.n||0}</div><div class="dl">${t.lb}</div><div class="db" style="background:${t.col};opacity:.3;"></div></div>`).join('');
+      .map(t=>`<div class="dt" style="cursor:pointer;" onclick="showTabById('${t.clickId||''}')"><div class="dc" style="color:${t.col};">${t.n}</div><div class="dl">${t.lb}</div><div class="db" style="background:${t.col};opacity:.3;"></div></div>`).join('');
     // Pipeline strip
     if(r.pipeline&&['PURCHASE_OFFICER','PURCHASE_MANAGER','PO_APPROVER','GRN_GATE'].includes(role)){
       const pp=document.getElementById('poPipeline');
@@ -1851,7 +1852,7 @@ const TILE_NAMES={
 };
 
 function buildHomeGrid(role){
-  if(window.innerWidth>600)return;
+  if(!S.mobileMode)return;
   const tabs=ROLE_TABS[role]||ROLE_TABS.PR_RAISER;
   const grid=document.getElementById('homeGrid');
   if(!grid)return;
@@ -1908,7 +1909,7 @@ function buildHomeGrid(role){
 }
 
 function openSection(id){
-  if(window.innerWidth>600){showTabById(id);return;}
+  if(!S.mobileMode){showTabById(id);return;}
   const grid=document.getElementById('homeGrid');
   if(grid)grid.style.display='none';
   document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('on');});
@@ -1929,7 +1930,7 @@ function goHome(){
   document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('on');});
   const btn=document.getElementById('backHomeBtn');
   if(btn)btn.style.display='none';
-  if(window.innerWidth<=600){
+  if(S.mobileMode){
     const grid=document.getElementById('homeGrid');
     if(grid)grid.style.display='block';
     loadDashboard();
@@ -1937,7 +1938,7 @@ function goHome(){
 }
 
 function updateTileCounts(r){
-  if(window.innerWidth>600)return;
+  if(!S.mobileMode)return;
   const c=r.counts||{};
   const pipe=r.pipeline||{};
   const defs=[
