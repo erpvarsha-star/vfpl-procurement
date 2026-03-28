@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+html+='<div class="home-tile" data-sid="'+t.id+'" onclick="openSection(this.dataset.sid)" id="htile-'+t.id+'">';<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -306,6 +306,35 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
   }
 }
 
+
+/* ── MOBILE HOME GRID NAVIGATION ── */
+.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.home-grid-hdr{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;}
+.home-tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 10px;cursor:pointer;position:relative;-webkit-tap-highlight-color:transparent;transition:transform .1s;}
+.home-tile:active{transform:scale(0.97);}
+.home-tile.home-dash{grid-column:1/-1;background:#1a1208;border:none;display:flex;justify-content:space-between;align-items:center;padding:13px 14px;}
+.tile-dot{position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:#D1D5DB;}
+.tile-icon-box{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:11px;font-weight:800;letter-spacing:.04em;}
+.tile-nm{font-size:13px;font-weight:600;color:var(--ink);line-height:1.2;margin-bottom:5px;}
+.tile-cnt{font-size:11px;font-weight:600;display:inline-block;padding:2px 7px;border-radius:4px;margin-bottom:3px;}
+.tc-red{background:#FEE2E2;color:#991B1B;}
+.tc-amb{background:#FEF3C7;color:#92400E;}
+.tc-grn{background:#D1FAE5;color:#065F46;}
+.tc-gry{background:#F3F4F6;color:#6B7280;}
+.tile-age{font-size:10px;color:#aaa;}
+.dash-lbl{color:#fff;font-size:13px;font-weight:600;}
+.pipe-pill{background:rgba(255,255,255,.18);color:#fff;font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;}
+.pipe-sep{color:rgba(255,255,255,.3);font-size:12px;margin:0 2px;}
+#backHomeBtn{display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--surface);border:1.5px solid var(--border);border-radius:24px;padding:11px 22px;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.12);white-space:nowrap;font-family:inherit;}
+.back-arrow-icon{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid var(--ink);flex-shrink:0;}
+@media (max-width:600px){
+  .sec.on{padding-bottom:72px !important;}
+}
+@media (min-width:601px){
+  #homeGrid{display:none !important;}
+  #backHomeBtn{display:none !important;}
+}
+
 </style>
 <link rel="manifest" id="pwa-manifest">
 <meta name="apple-mobile-web-app-title" content="VFPL PRO">
@@ -354,6 +383,12 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
 </nav>
 
 <div class="tabs-wrap"><div class="tabs" id="tabBar"></div>
+
+<!-- MOBILE HOME GRID -->
+<div id="homeGrid" style="display:none;padding:12px;"></div>
+
+<!-- MOBILE BACK BTN -->
+<button id="backHomeBtn" onclick="goHome()"><div class="back-arrow-icon"></div>Back to home</button>
 
 <!-- RAISE PR -->
 <div class="sec" id="sec-raise">
@@ -795,6 +830,7 @@ async function doLogin(){
       document.getElementById('loginScreen').style.display='none';
       document.getElementById('navUser').textContent=r.name;
       setupTabs(r.role);
+      if(window.innerWidth<=600){buildHomeGrid(r.role);goHome();}
       toast('Welcome, '+r.name,'ok');
     }else{
       document.getElementById('lE').textContent='Incorrect PIN — try again';
@@ -828,7 +864,8 @@ function showTab(el){
   if(map[id])map[id]();
 }
 function showTabById(id){
-  const el=document.querySelector(`[data-tab="${id}"]`);
+  if(window.innerWidth<=600){openSection(id);return;}
+  const el=document.querySelector('[data-tab="'+id+'"]');
   if(el)showTab(el);else document.getElementById('sec-'+id)?.classList.add('on');
 }
 
@@ -1429,6 +1466,7 @@ async function loadDashboard(){
         document.getElementById('pipe-n-closed').textContent=r.pipeline.posClosed||0;
       }
     }
+    updateTileCounts(r);
     const feed=r.feed||[];
     const dc={po:'var(--green)',pr:'var(--accent)',rfq:'var(--accent2)'};
     document.getElementById('actFeed').innerHTML=feed.length?
@@ -1795,6 +1833,191 @@ function filterPOsByStatus(status){
 
 // ── UPDATE loadPOs to show status pipeline column ─────────────
 // (handled in loadPOs update below — status chip added to each row)
+
+
+// ── MOBILE HOME NAVIGATION ────────────────────────────────────
+const TILE_CFG={
+  raise:    {bg:'#EFF6FF',ic:'PR',tc:'#1D4ED8'},
+  myprs:    {bg:'#EFF6FF',ic:'PR',tc:'#1D4ED8'},
+  review:   {bg:'#FFF7ED',ic:'RV',tc:'#C2410C',ck:'prPending'},
+  rfq:      {bg:'#F5F3FF',ic:'RQ',tc:'#6D28D9',ck:'rfqActive'},
+  compare:  {bg:'#F0FDF4',ic:'CM',tc:'#15803D'},
+  approve:  {bg:'#EFF6FF',ic:'AP',tc:'#1D4ED8',ck:'pendingApproval'},
+  grn:      {bg:'#FFFBEB',ic:'GR',tc:'#92400E'},
+  invoice:  {bg:'#FFFBEB',ic:'IN',tc:'#92400E',ck:'invoicesPending'},
+  pos:      {bg:'#F0FDF4',ic:'PO',tc:'#15803D'},
+  qc:       {bg:'#FEF3C7',ic:'QC',tc:'#B45309',ck:'qcPending'},
+  qchistory:{bg:'#F3F4F6',ic:'QH',tc:'#6B7280'},
+  mygrns:   {bg:'#F3F4F6',ic:'GH',tc:'#6B7280'},
+  dashboard:{bg:'#1a1208',ic:'DB',tc:'#fff',special:true}
+};
+
+const TILE_NAMES={
+  raise:'New PR',myprs:'My PRs',review:'Review PRs',rfq:'RFQ Status',
+  compare:'Compare',approve:'Approve',grn:'GRN Entry',invoice:'Invoices',
+  pos:'All POs',qc:'QC Pending',qchistory:'QC History',mygrns:'My GRNs',
+  dashboard:'Dashboard'
+};
+
+function buildHomeGrid(role){
+  if(window.innerWidth>600)return;
+  const tabs=ROLE_TABS[role]||ROLE_TABS.PR_RAISER;
+  const grid=document.getElementById('homeGrid');
+  if(!grid)return;
+  const regular=tabs.filter(function(t){return t.id!=='dashboard';});
+  const hasDash=tabs.find(function(t){return t.id==='dashboard';});
+  // Build via DOM — avoids ALL quote escaping issues
+  grid.innerHTML='<p class="home-grid-hdr">What do you want to do?</p>';
+  const gd=document.createElement('div');
+  gd.className='home-grid';
+  regular.forEach(function(t){
+    const m=TILE_CFG[t.id]||{bg:'#F3F4F6',ic:'--',tc:'#888'};
+    const nm=TILE_NAMES[t.id]||t.lb;
+    const tile=document.createElement('div');
+    tile.className='home-tile';
+    tile.id='htile-'+t.id;
+    (function(id){tile.onclick=function(){openSection(id);};})(t.id);
+    const dot=document.createElement('div');
+    dot.className='tile-dot';dot.id='tdot-'+t.id;
+    const ico=document.createElement('div');
+    ico.className='tile-icon-box';
+    ico.style.background=m.bg;ico.style.color=m.tc;ico.textContent=m.ic;
+    const nm2=document.createElement('div');
+    nm2.className='tile-nm';nm2.textContent=nm;
+    const cnt=document.createElement('div');
+    cnt.className='tile-cnt tc-gry';cnt.id='tcnt-'+t.id;cnt.textContent='--';
+    const age=document.createElement('div');
+    age.className='tile-age';age.id='tage-'+t.id;age.textContent='loading...';
+    tile.appendChild(dot);tile.appendChild(ico);tile.appendChild(nm2);
+    tile.appendChild(cnt);tile.appendChild(age);
+    gd.appendChild(tile);
+  });
+  if(hasDash){
+    const dash=document.createElement('div');
+    dash.className='home-tile home-dash';
+    dash.onclick=function(){openSection('dashboard');};
+    const lbl=document.createElement('div');
+    lbl.className='dash-lbl';lbl.textContent='Dashboard';
+    const pipe=document.createElement('div');
+    pipe.id='tpipe-dash';
+    pipe.style.cssText='display:flex;align-items:center;gap:3px;';
+    ['pp0','pp1','pp2','pp3'].forEach(function(pid,idx){
+      if(idx>0){const sep=document.createElement('span');sep.className='pipe-sep';sep.textContent='›';pipe.appendChild(sep);}
+      const pill=document.createElement('span');
+      pill.className='pipe-pill';pill.id=pid;pill.textContent='-';
+      pipe.appendChild(pill);
+    });
+    dash.appendChild(lbl);dash.appendChild(pipe);
+    gd.appendChild(dash);
+  }
+  grid.appendChild(gd);
+  grid.style.display='block';
+  const tw=document.querySelector('.tabs-wrap');
+  if(tw)tw.style.display='none';
+}
+
+function openSection(id){
+  if(window.innerWidth>600){showTabById(id);return;}
+  const grid=document.getElementById('homeGrid');
+  if(grid)grid.style.display='none';
+  document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('on');});
+  const sec=document.getElementById('sec-'+id);
+  if(sec)sec.classList.add('on');
+  const btn=document.getElementById('backHomeBtn');
+  if(btn)btn.style.display='flex';
+  const loaders={
+    review:loadReview,rfq:loadRFQ,compare:loadCompare,approve:loadApprove,
+    grn:loadGRN,pos:loadPOs,dashboard:loadDashboard,myprs:loadMyPRs,
+    qc:loadQC,qchistory:loadQCHistory,invoice:loadPendingInvoices,
+    mygrns:loadMyGRNs,raise:function(){}
+  };
+  if(loaders[id])loaders[id]();
+}
+
+function goHome(){
+  document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('on');});
+  const btn=document.getElementById('backHomeBtn');
+  if(btn)btn.style.display='none';
+  if(window.innerWidth<=600){
+    const grid=document.getElementById('homeGrid');
+    if(grid)grid.style.display='block';
+    loadDashboard();
+  }
+}
+
+function updateTileCounts(r){
+  if(window.innerWidth>600)return;
+  const c=r.counts||{};
+  const pipe=r.pipeline||{};
+  const defs=[
+    {id:'approve', n:c.pendingApproval||0, urgent:true},
+    {id:'review',  n:c.prPending||0,       urgent:(c.prPending||0)>0},
+    {id:'rfq',     n:c.rfqActive||0,       urgent:false},
+    {id:'qc',      n:c.qcPending||0,       urgent:(c.qcPending||0)>0},
+    {id:'invoice', n:c.invoicesPending||0, urgent:(c.invoicesPending||0)>0},
+    {id:'compare', n:0,                    urgent:false},
+    {id:'pos',     n:0,                    urgent:false},
+    {id:'grn',     n:0,                    urgent:false},
+    {id:'raise',   n:0,                    urgent:false},
+    {id:'myprs',   n:0,                    urgent:false},
+  ];
+  defs.forEach(function(d){
+    const cEl=document.getElementById('tcnt-'+d.id);
+    const dEl=document.getElementById('tdot-'+d.id);
+    const aEl=document.getElementById('tage-'+d.id);
+    if(!cEl)return;
+    if(d.n>0){
+      cEl.textContent=d.n+' pending';
+      cEl.className='tile-cnt '+(d.urgent?'tc-red':'tc-amb');
+      if(dEl)dEl.style.background=d.urgent?'#DC2626':'#F59E0B';
+      if(aEl)aEl.textContent='';
+    }else{
+      cEl.textContent='All clear';
+      cEl.className='tile-cnt tc-grn';
+      if(dEl)dEl.style.background='#D1FAE5';
+      if(aEl)aEl.textContent='';
+    }
+  });
+  // Pipeline pills in dashboard tile
+  const pp=[pipe.poIssued||0,pipe.goodsReceived||0,pipe.qcPassed||0,pipe.posClosed||0];
+  ['pp0','pp1','pp2','pp3'].forEach(function(id,i){
+    const el=document.getElementById(id);
+    if(el)el.textContent=pp[i];
+  });
+  // Age from feed — oldest item per type
+  const now=new Date();
+  const seen={};
+  (r.feed||[]).reverse().forEach(function(f){
+    if(!f.time||seen[f.type])return;
+    const days=Math.floor((now-new Date(f.time))/86400000);
+    if(days<1)return;
+    const map={pr:'review',po:'approve'};
+    const tid=map[f.type];
+    if(tid&&!seen[tid]){
+      seen[tid]=true;
+      const aEl=document.getElementById('tage-'+tid);
+      if(aEl)aEl.textContent='oldest: '+days+'d ago';
+    }
+  });
+}
+
+// Handle window resize — switch between mobile/desktop nav
+window.addEventListener('resize',function(){
+  if(!S.user)return;
+  if(window.innerWidth>600){
+    document.getElementById('homeGrid').style.display='none';
+    document.getElementById('backHomeBtn').style.display='none';
+    const tw=document.querySelector('.tabs-wrap');
+    if(tw)tw.style.display='';
+    const role=S.user.role;
+    setupTabs(role);
+  } else {
+    const tw=document.querySelector('.tabs-wrap');
+    if(tw)tw.style.display='none';
+    buildHomeGrid(S.user.role);
+    goHome();
+  }
+});
 
 </script>
 
