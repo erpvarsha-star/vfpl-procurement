@@ -18,7 +18,7 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
 .nav-logo img{width:100%;height:100%;object-fit:cover;}
 .nav-title{font-family:var(--mono);font-size:11px;font-weight:600;color:#fff;letter-spacing:.1em;text-transform:uppercase;}
 .nav-user{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.6);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:4px 9px;cursor:pointer;}
-.tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;position:sticky;top:52px;z-index:99;scrollbar-width:none;}
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;position:sticky;top:52px;z-index:99;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;}
 .tabs::-webkit-scrollbar{display:none;}
 .tab{padding:12px 13px;font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:5px;transition:color .15s,border-color .15s;}
 .tab.on{color:var(--accent);border-bottom-color:var(--accent);}
@@ -169,8 +169,9 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
   /* NAV — compact on mobile */
   .nav { height: 48px; padding: 0 10px; }
 
-  /* Hide "PROCUREMENT" text on mobile — logo is enough */
-  .nav-brand span { display: none; }
+  /* Hide nav title and brand text on mobile — logo only */
+  .nav-title { display: none !important; }
+  .nav-logo > div { display: none !important; }
 
   /* User name — show initials only on mobile */
   .nav-user { 
@@ -186,11 +187,26 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
   .nav-logo img { width: 28px !important; height: 28px !important; }
 
   /* TAB BAR — larger touch targets on mobile */
-  .tabs { top: 48px; }
+  .tabs { 
+    top: 48px;
+    -webkit-overflow-scrolling: touch;
+  }
   .tab { 
-    padding: 13px 11px; 
-    font-size: 10px;
-    min-width: 0;
+    padding: 12px 10px; 
+    font-size: 11px;
+    min-width: 44px;
+    flex-shrink: 0;
+  }
+  /* Fade hint that tabs scroll right */
+  .tabs-wrap { position: relative; }
+  .tabs-wrap::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 28px;
+    background: linear-gradient(to right, transparent, var(--surface));
+    pointer-events: none;
+    z-index: 1;
   }
 
   /* MAIN content — less side padding */
@@ -337,7 +353,7 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
   <div class="nav-user" id="navUser">—</div>
 </nav>
 
-<div class="tabs" id="tabBar"></div>
+<div class="tabs-wrap"><div class="tabs" id="tabBar"></div>
 
 <!-- RAISE PR -->
 <div class="sec" id="sec-raise">
@@ -724,7 +740,7 @@ const LOGO='data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJT
 const ROLE_TABS={
   RAISER:[{id:'raise',lb:'New PR'},{id:'myprs',lb:'My PRs'},{id:'dashboard',lb:'Dashboard'}],
   PR_RAISER:[{id:'raise',lb:'New PR'},{id:'myprs',lb:'My PRs'},{id:'dashboard',lb:'Dashboard'}],
-  PURCHASE_OFFICER:[{id:'review',lb:'Review PRs',bd:'b-rev'},{id:'rfq',lb:'RFQ Status',bd:'b-rfq'},{id:'compare',lb:'Compare',bd:'b-cmp'},{id:'grn',lb:'GRN Entry',bd:'b-grn'},{id:'invoice',lb:'Invoices',bd:'b-inv'},{id:'pos',lb:'All POs'},{id:'dashboard',lb:'Dashboard'}],
+  PURCHASE_OFFICER:[{id:'review',lb:'Review PRs',mb:'PRs',bd:'b-rev'},{id:'rfq',lb:'RFQ Status',mb:'RFQs',bd:'b-rfq'},{id:'compare',lb:'Compare',mb:'Compare',bd:'b-cmp'},{id:'grn',lb:'GRN Entry',mb:'GRN',bd:'b-grn'},{id:'invoice',lb:'Invoices',mb:'Invoice',bd:'b-inv'},{id:'pos',lb:'All POs',mb:'POs'},{id:'dashboard',lb:'Dashboard',mb:'Dash'}],
   PURCHASE_MANAGER:[{id:'compare',lb:'Compare',bd:'b-cmp'},{id:'rfq',lb:'RFQ Status'},{id:'pos',lb:'All POs'},{id:'dashboard',lb:'Dashboard'}],
   PO_APPROVER:[{id:'approve',lb:'Approve',bd:'b-app'},{id:'compare',lb:'Compare'},{id:'review',lb:'Review PRs'},{id:'rfq',lb:'RFQ Status'},{id:'grn',lb:'GRN Entry'},{id:'invoice',lb:'Invoices',bd:'b-inv'},{id:'pos',lb:'All POs'},{id:'dashboard',lb:'Dashboard'}],
   GRN_GATE:[{id:'grn',lb:'GRN Entry',bd:'b-grn'},{id:'invoice',lb:'Invoices',bd:'b-inv'},{id:'mygrns',lb:'My GRNs'},{id:'dashboard',lb:'Dashboard'}],
@@ -796,7 +812,7 @@ async function doLogin(){
 function setupTabs(role){
   const tabs=ROLE_TABS[role]||ROLE_TABS.PR_RAISER;
   document.getElementById('tabBar').innerHTML=tabs.map((t,i)=>
-    `<div class="tab${i===0?' on':''}" data-tab="${t.id}" onclick="showTab(this)">${t.lb}${t.bd?`<span class="badge zero" id="${t.bd}">0</span>`:''}</div>`
+    `<div class="tab${i===0?' on':''}" data-tab="${t.id}" onclick="showTab(this)">${window.innerWidth<=600&&t.mb?t.mb:t.lb}${t.bd?`<span class="badge zero" id="${t.bd}">0</span>`:''}</div>`
   ).join('');
   showTabById(tabs[0].id);
 }
@@ -804,6 +820,8 @@ function showTab(el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
   el.classList.add('on');
+  // Scroll active tab into view on mobile
+  el.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
   const id=el.dataset.tab;
   document.getElementById('sec-'+id)?.classList.add('on');
   const map={review:loadReview,rfq:loadRFQ,compare:loadCompare,approve:loadApprove,grn:loadGRN,pos:loadPOs,dashboard:loadDashboard,myprs:loadMyPRs,qc:loadQC,qchistory:loadQCHistory,invoice:loadPendingInvoices,mygrns:loadMyGRNs};
