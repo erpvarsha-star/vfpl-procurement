@@ -320,7 +320,13 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
 .back-arrow-icon{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid var(--ink);flex-shrink:0;}
 .sec.on{padding-bottom:72px;}
 /* homeGrid is always visible — tab bar hidden for all devices */
-.tabs-wrap{display:none;}
+.tabs-wrap{
+  position:absolute;
+  left:-9999px;
+  top:-9999px;
+  opacity:0;
+  pointer-events:none;
+}
 
 </style>
 <link rel="manifest" id="pwa-manifest">
