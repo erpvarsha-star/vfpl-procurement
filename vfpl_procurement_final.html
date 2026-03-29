@@ -594,10 +594,11 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
     </div>
     <div class="fg">
       <label>Invoice Photo *</label>
-      <div style="border:2px dashed #ddd;border-radius:var(--r);padding:16px;text-align:center;cursor:pointer;" onclick="document.getElementById('inv-photo-input').click()">
-        <div id="inv-photo-preview" style="font-size:12px;color:var(--muted);">📷 Tap to capture invoice photo</div>
-        <input type="file" id="inv-photo-input" accept="image/*" capture="environment" style="display:none" onchange="previewInvPhoto(this)">
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button class="btn btn-s" style="flex:1;font-size:12px;" onclick="openInvDriveFolder()">📁 Upload to Drive</button>
+        <button class="btn btn-s" style="flex:1;font-size:12px;" id="inv-fetch-btn" onclick="fetchInvPhoto()">✓ Fetch Link</button>
       </div>
+      <div id="inv-photo-preview" style="font-size:12px;color:var(--muted);margin-top:6px;min-height:16px;">Upload invoice photo to Drive first, then tap Fetch Link</div>
     </div>
     <div id="inv-match-warning" style="display:none;padding:10px 12px;background:#FEF3C7;border:1px solid #F59E0B;border-radius:var(--r);font-size:12px;color:#92400E;margin-bottom:12px;"></div>
     <div class="btn-row">
@@ -663,12 +664,14 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
     </div>
     <div class="fg">
       <label>GRN Photo</label>
-      <div class="upload-area" onclick="document.getElementById('grn-photo').click()">
-        <div class="upload-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v9M4 4l3-3 3 3M2 12h10" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
-        <div style="font-size:11px;color:var(--muted);">Tap to photograph GRN document</div>
-        <div style="font-size:9px;color:var(--muted);margin-top:2px;" id="grn-photo-st">Saved to Drive · linked to PO</div>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button class="btn btn-s" style="flex:1;font-size:12px;" onclick="openGRNDriveFolder()">📁 Upload to Drive</button>
+        <button class="btn btn-s" style="flex:1;font-size:12px;" id="grn-fetch-btn" onclick="fetchGRNPhoto()">✓ Fetch Link</button>
       </div>
-      <input type="file" id="grn-photo" accept="image/*" capture="environment" style="display:none;" onchange="photoSel(this)">
+      <div id="grn-photo-st" style="font-size:11px;color:var(--muted);margin-top:6px;min-height:16px;">Upload photo to Drive first, then tap Fetch Link</div>
+      <div id="grn-photo-preview" style="margin-top:6px;display:none;">
+        <a id="grn-photo-link" href="#" target="_blank" style="font-size:11px;color:#3B82F6;">📷 View uploaded photo</a>
+      </div>
     </div>
     <div class="fg"><label>Remarks</label><textarea id="grn-rem" placeholder="Notes on delivery…"></textarea></div>
     <div class="btn-row"><button class="btn btn-s" onclick="csh('grnSh')">Cancel</button><button class="btn btn-p" onclick="submitGRN()">Record GRN →</button></div>
@@ -1387,13 +1390,34 @@ function openGRN(poNum,poQty,uom,desc){
   document.getElementById('grn-num').value='';
   document.getElementById('grn-qty').value='';
   document.getElementById('grn-rem').value='';
-  document.getElementById('grn-photo-st').textContent='Saved to Drive · linked to PO';
+  document.getElementById('grn-photo-st').textContent='Upload photo to Drive first, then tap Fetch Link';
+  document.getElementById('grn-photo-preview').style.display='none';
   document.getElementById('grnSh').classList.add('on');
 }
-function photoSel(input){
-  const f=input.files[0];if(!f)return;
-  S.grnPhoto='PHOTO:'+f.name;
-  document.getElementById('grn-photo-st').textContent='Photo ready: '+f.name;
+function openGRNDriveFolder(){
+  window.open('https://drive.google.com/drive/folders/1PARgU3HrsDvUB4K__XUhlUNNN1hCe4IX','_blank');
+  document.getElementById('grn-photo-st').textContent='Upload photo in Drive, then tap Fetch Link ↑';
+}
+async function fetchGRNPhoto(){
+  const btn=document.getElementById('grn-fetch-btn');
+  const st=document.getElementById('grn-photo-st');
+  if(!S.actPO){toast('Open a GRN first','err');return;}
+  btn.disabled=true;btn.textContent='Fetching…';
+  st.textContent='Looking for latest upload…';
+  try{
+    const r=await api({action:'getLatestUpload',type:'GRN',ref:S.actPO});
+    if(r.ok){
+      S.grnPhoto=r.link;
+      st.textContent='✓ Linked: '+r.name;
+      const prev=document.getElementById('grn-photo-preview');
+      const lnk=document.getElementById('grn-photo-link');
+      if(prev&&lnk){lnk.href=r.link;prev.style.display='';}
+    } else {
+      st.textContent='⚠ '+r.error;
+      toast(r.error||'No photo found','err');
+    }
+  }catch(e){st.textContent='Connection error';toast('Error fetching photo','err');}
+  finally{btn.disabled=false;btn.textContent='✓ Fetch Link';}
 }
 async function submitGRN(){
   const gn=document.getElementById('grn-num').value.trim();
@@ -1905,7 +1929,7 @@ function openInvoiceUpload(poNum,vendorName,poAmt){
   S.actInvPO=poNum;S.actInvAmt=poAmt;
   document.getElementById('inv-number').value='';
   document.getElementById('inv-amount').value='';
-  document.getElementById('inv-photo-preview').textContent='📷 Tap to capture invoice photo';
+  document.getElementById('inv-photo-preview').textContent='Upload invoice photo to Drive first, then tap Fetch Link';
   document.getElementById('inv-match-warning').style.display='none';
   S.invPhotoData='';
   const info=document.getElementById('inv-po-info');
@@ -1927,14 +1951,27 @@ function openInvoiceUpload(poNum,vendorName,poAmt){
   document.getElementById('invoiceSh').classList.add('on');
 }
 
-function previewInvPhoto(input){
-  if(!input.files||!input.files[0])return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    S.invPhotoData=e.target.result;
-    document.getElementById('inv-photo-preview').innerHTML=`<img src="${e.target.result}" style="max-height:120px;border-radius:6px;">`;
-  };
-  reader.readAsDataURL(input.files[0]);
+function openInvDriveFolder(){
+  window.open('https://drive.google.com/drive/folders/1MXIRJO7M-IxIoZ0ZOfyJKl67aBv8JoB8','_blank');
+  document.getElementById('inv-photo-preview').textContent='Upload invoice in Drive, then tap Fetch Link ↑';
+}
+async function fetchInvPhoto(){
+  const btn=document.getElementById('inv-fetch-btn');
+  const prev=document.getElementById('inv-photo-preview');
+  if(!S.actInvPO){toast('Open an invoice first','err');return;}
+  btn.disabled=true;btn.textContent='Fetching…';
+  prev.textContent='Looking for latest upload…';
+  try{
+    const r=await api({action:'getLatestUpload',type:'INVOICE',ref:S.actInvPO});
+    if(r.ok){
+      S.invPhotoData=r.link;
+      prev.innerHTML=`✓ Linked: <a href="${r.link}" target="_blank" style="color:#3B82F6;">${r.name}</a>`;
+    } else {
+      prev.textContent='⚠ '+r.error;
+      toast(r.error||'No photo found','err');
+    }
+  }catch(e){prev.textContent='Connection error';toast('Error fetching photo','err');}
+  finally{btn.disabled=false;btn.textContent='✓ Fetch Link';}
 }
 
 async function submitInvoice(){
@@ -1942,17 +1979,17 @@ async function submitInvoice(){
   const invAmt=document.getElementById('inv-amount').value;
   if(!invNum){toast('Enter invoice number','err');return;}
   if(!invAmt||parseFloat(invAmt)<=0){toast('Enter invoice amount','err');return;}
-  if(!S.invPhotoData){toast('Invoice photo is required','err');return;}
   const btn=document.getElementById('invSubmitBtn');
-  if(btn){btn.disabled=true;btn.textContent='Uploading…';}
+  if(btn){btn.disabled=true;btn.textContent='Submitting…';}
   csh('invoiceSh');
   try{
     const r=await api({action:'uploadInvoice',poNum:S.actInvPO,
       invoiceNumber:invNum,invoiceAmount:parseFloat(invAmt),
-      photoData:S.invPhotoData,uploadedBy:S.user&&S.user.name||'Officer'});
-    if(r.ok){toast('Invoice uploaded — PO closed','ok');loadPendingInvoices();}
+      photoLink:S.invPhotoData||'',
+      uploadedBy:S.user&&S.user.name||'Officer'});
+    if(r.ok){toast('Invoice submitted — PO closed','ok');loadPendingInvoices();}
     else toast(r.error||'Failed','err');
-  }catch(e){toast('Error uploading invoice','err');}
+  }catch(e){toast('Error submitting invoice','err');}
   finally{if(btn){btn.disabled=false;btn.textContent='Submit Invoice';}}
 }
 
