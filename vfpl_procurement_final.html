@@ -1987,6 +1987,82 @@ function updateTileCounts(r){
 
 // resize handler removed — caused PIN screen dancing on mobile keyboard open
 
+
+// NAV FIX
+const ROLE_ACCESS = {
+  RAISER: ['raise','myprs','dashboard'],
+  PR_RAISER: ['raise','myprs','dashboard'],
+  PURCHASE_OFFICER: ['review','rfq','compare','grn','invoice','pos','dashboard'],
+  PURCHASE_MANAGER: ['compare','rfq','pos','dashboard'],
+  PO_APPROVER: ['approve','compare','review','rfq','grn','invoice','pos','dashboard'],
+  GRN_GATE: ['grn','invoice','mygrns','dashboard'],
+  QUALITY: ['qc','qchistory']
+};
+
+const SECTION_MAP = {
+  raise: 'sec-raise',
+  myprs: 'sec-myprs',
+  review: 'sec-review',
+  rfq: 'sec-rfq',
+  compare: 'sec-compare',
+  approve: 'sec-approve',
+  grn: 'sec-grn',
+  pos: 'sec-pos',
+  dashboard: 'sec-dashboard',
+  qc: 'sec-qc',
+  qchistory: 'sec-qchistory',
+  invoice: 'sec-invoice',
+  mygrns: 'sec-mygrns'
+};
+
+let CURRENT_ROLE = 'RAISER';
+
+function openSection(id){
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+  const el = document.getElementById(id);
+  if(el) el.classList.add('on');
+
+  const hg = document.getElementById('homeGrid');
+  const back = document.getElementById('backHomeBtn');
+
+  if(hg) hg.style.display = 'none';
+  if(back) back.style.display = 'flex';
+}
+
+function goHome(){
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+
+  const hg = document.getElementById('homeGrid');
+  const back = document.getElementById('backHomeBtn');
+
+  if(hg) hg.style.display = 'grid';
+  if(back) back.style.display = 'none';
+}
+
+function buildHomeGrid(){
+  const grid = document.getElementById('homeGrid');
+  if(!grid) return;
+
+  grid.innerHTML = '';
+  const sections = ROLE_ACCESS[CURRENT_ROLE] || [];
+
+  sections.forEach(key => {
+    const secId = SECTION_MAP[key];
+    if(!secId) return;
+
+    const tile = document.createElement('div');
+    tile.className = 'home-tile';
+    tile.onclick = () => openSection(secId);
+    tile.innerHTML = '<div class="tile-nm">'+key.toUpperCase()+'</div>';
+
+    grid.appendChild(tile);
+  });
+}
+
+window.addEventListener('load', function(){
+  buildHomeGrid();
+});
+
 </script>
 
 <!-- PO PREVIEW SHEET -->
