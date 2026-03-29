@@ -422,15 +422,14 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
   <div id="newItemList"><div class="em">Loading…</div></div>
 </div>
 
-<!-- NEW ITEM MASTER ENTRY SHEET -->
+<!-- NEW ITEM REVIEW SHEET -->
 <div class="sh-bg" id="newItemSh">
   <div class="sh">
     <div class="sh-drag"></div>
-    <div class="sh-title">Add to Item Master</div>
+    <div class="sh-title">Review New Item Request</div>
     <div id="newItemReqInfo" style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:var(--r);padding:10px 12px;margin-bottom:14px;font-size:12px;"></div>
-    <div class="fg"><label>Part Code * <span style="font-size:9px;color:var(--muted);">(assign a unique code)</span></label>
-      <input type="text" id="ni-code" placeholder="e.g. CNAB0099" style="font-family:var(--mono);text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
-      <div id="ni-code-err" style="color:var(--accent);font-size:11px;margin-top:3px;display:none;"></div>
+    <div class="fg"><label>Item Description * <span style="font-size:9px;color:var(--muted);">(edit if needed before RFQ)</span></label>
+      <input type="text" id="ni-desc" placeholder="Full description as it will appear in RFQ">
     </div>
     <div class="fg"><label>Category *</label>
       <select id="ni-cat">
@@ -450,32 +449,32 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
         <option>VEHICLE REPAIR</option><option>RAW MATERIAL</option>
       </select>
     </div>
-    <div class="fg"><label>Sub Category</label><input type="text" id="ni-subcat" placeholder="e.g. Ball Bearings, Drill Bits…"></div>
     <div class="g2">
+      <div class="fg"><label>Qty *</label><input type="number" id="ni-qty" placeholder="0" inputmode="numeric"></div>
       <div class="fg"><label>UOM *</label>
         <select id="ni-uom">
           <option>NOS</option><option>KG</option><option>MTR</option><option>LTR</option>
-          <option>SET</option><option>BOX</option><option>PCS</option><option>ROLL</option>
-          <option>PAIR</option><option>JOB</option>
-        </select>
-      </div>
-      <div class="fg"><label>Tax %</label>
-        <select id="ni-tax">
-          <option value="0">0%</option><option value="5">5%</option>
-          <option value="12">12%</option><option value="18" selected>18%</option>
-          <option value="28">28%</option>
+          <option>SET</option><option>BOX</option><option>PCS</option><option>ROLL</option><option>PAIR</option><option>JOB</option>
         </select>
       </div>
     </div>
-    <div class="g2">
-      <div class="fg"><label>MOQ</label><input type="number" id="ni-moq" placeholder="1" value="1" inputmode="numeric"></div>
-      <div class="fg"><label>Latest Rate (₹)</label><input type="number" id="ni-rate" placeholder="0" value="0" inputmode="decimal"></div>
+    <div class="fg"><label>Urgency</label>
+      <select id="ni-urg">
+        <option value="YELLOW">YELLOW — Normal</option>
+        <option value="ORANGE">ORANGE — Urgent</option>
+        <option value="RED">RED — Critical</option>
+      </select>
     </div>
-    <div class="fg"><label>Item Description *</label><input type="text" id="ni-desc" placeholder="Full description as it will appear in system"></div>
+    <div class="fg"><label>Remarks for vendors <span style="font-size:9px;color:var(--muted);">(brand, spec, application)</span></label>
+      <input type="text" id="ni-remarks" placeholder="e.g. Brand: SKF only · For CNC VMC 1050 · M42 grade">
+    </div>
+    <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:var(--r);padding:10px 12px;margin-bottom:12px;font-size:11px;color:#9A3412;">
+      ⚡ No part code will be assigned yet. RFQ goes out, quotes come in, Fazal selects vendor, Yash approves — part code is auto-generated only when PO is released.
+    </div>
     <div id="ni-err" style="color:var(--accent);font-size:12px;margin-bottom:8px;display:none;"></div>
     <div class="btn-row">
-      <button class="btn btn-s" onclick="csh('newItemSh')">Cancel</button>
-      <button class="btn btn-g" style="flex:2;" onclick="submitNewItemToMaster()">Add to Item Master →</button>
+      <button class="btn btn-s" onclick="rejectNewItem()">✕ Reject</button>
+      <button class="btn btn-g" style="flex:2;" onclick="floatRFQForNewItem()">Float RFQ →</button>
     </div>
   </div>
 </div>
@@ -2017,85 +2016,82 @@ async function loadNewItemRequests(){
 function openNewItemForm(idx){
   _currentNewItem=_newItemStore[idx];
   const item=_currentNewItem;
-  // Pre-fill info banner
   document.getElementById('newItemReqInfo').innerHTML=
     `<div style="font-weight:600;margin-bottom:4px;">📋 Request from ${item.name} (${item.dept})</div>
      <div>${item.description}</div>
-     ${item.brand?`<div style="margin-top:3px;color:var(--muted);">Brand: ${item.brand} ${item.spec?'· Spec: '+item.spec:''}</div>`:''}
+     ${item.brand?`<div style="margin-top:3px;color:var(--muted);">Brand: ${item.brand}${item.spec?' · Spec: '+item.spec:''}</div>`:''}
      ${item.machine?`<div style="color:var(--muted);">For: ${item.machine}</div>`:''}
      <div style="margin-top:3px;color:var(--muted);">Qty needed: ${item.qty} ${item.uom}</div>`;
-  // Pre-fill fields from request
   document.getElementById('ni-desc').value=item.description||'';
-  document.getElementById('ni-code').value='';
-  document.getElementById('ni-subcat').value=item.brand||'';
-  document.getElementById('ni-moq').value=item.qty||1;
-  // Set UOM if matches
+  document.getElementById('ni-qty').value=item.qty||'';
+  document.getElementById('ni-remarks').value=item.brand||'';
+  document.getElementById('ni-err').style.display='none';
   const uomEl=document.getElementById('ni-uom');
   const uomVal=(item.uom||'NOS').toUpperCase();
   for(let opt of uomEl.options){if(opt.value===uomVal){uomEl.value=uomVal;break;}}
-  // Clear errors
-  document.getElementById('ni-err').style.display='none';
-  document.getElementById('ni-code-err').style.display='none';
-  document.getElementById('ni-code').oninput=function(){
-    const v=this.value.toUpperCase();
-    this.value=v;
-    if(v.length>=3){validatePartCode(v);}
-    else{document.getElementById('ni-code-err').style.display='none';}
-  };
+  const urgEl=document.getElementById('ni-urg');
+  const urgVal=(item.urgency||'YELLOW').toUpperCase();
+  for(let opt of urgEl.options){if(opt.value===urgVal){urgEl.value=urgVal;break;}}
   document.getElementById('newItemSh').classList.add('on');
 }
 
-async function validatePartCode(code){
-  const err=document.getElementById('ni-code-err');
-  const r=await api({action:'checkPartCode',partCode:code});
-  if(r.exists){
-    err.textContent='⚠ Part code '+code+' already exists: '+r.desc;
-    err.style.display='block';
+async function floatRFQForNewItem(){
+  const desc=document.getElementById('ni-desc').value.trim();
+  const cat=document.getElementById('ni-cat').value;
+  const qty=document.getElementById('ni-qty').value;
+  const uom=document.getElementById('ni-uom').value;
+  const urg=document.getElementById('ni-urg').value;
+  const remarks=document.getElementById('ni-remarks').value.trim();
+  const err=document.getElementById('ni-err');
+  if(!desc){err.textContent='Item description is required';err.style.display='block';return;}
+  if(!cat){err.textContent='Select a category';err.style.display='block';return;}
+  if(!qty||parseFloat(qty)<=0){err.textContent='Enter quantity';err.style.display='block';return;}
+  err.style.display='none';
+  const btn=document.querySelector('#newItemSh .btn-g');
+  btn.textContent='Floating RFQ…';btn.disabled=true;
+  const prR=await api({
+    action:'submitPR',
+    dept:_currentNewItem?.dept||'',
+    plant:_currentNewItem?.plant||'VFPL Aurangabad',
+    category:cat, subcat:'',
+    itemCode:'NEWITEM',
+    itemDesc:desc, qty:qty, uom:uom, urgency:urg,
+    reqBy:_currentNewItem?.name||'',
+    raisedBy:S.user?.name||'',
+    remarks:(remarks?remarks+' · ':'')+'New item — no part code yet',
+    isNewItem:true,
+  });
+  if(!prR.ok){
+    err.textContent=prR.error||'Failed to raise PR';err.style.display='block';
+    btn.textContent='Float RFQ →';btn.disabled=false;
+    return;
+  }
+  const rfqR=await api({
+    action:'confirmRFQ',
+    prNum:prR.prNum, category:cat,
+    itemCode:'NEWITEM', itemDesc:desc,
+    qty:qty, uom:uom, plant:'VFPL Aurangabad',
+    pin:S.pin, isNewItem:true,
+  });
+  btn.textContent='Float RFQ →';btn.disabled=false;
+  if(rfqR.ok||rfqR.success){
+    if(_currentNewItem?._rowIndex){
+      await api({action:'markNewItemFloated',rowIndex:_currentNewItem._rowIndex,prNum:prR.prNum,rfqNum:rfqR.rfqNum||''});
+    }
+    toast(`✓ RFQ ${rfqR.rfqNum||''} floated to ${rfqR.vendorsSent||0} vendors`,'ok');
+    csh('newItemSh'); _currentNewItem=null; loadNewItemRequests();
   } else {
-    err.textContent='✓ Available';
-    err.style.color='var(--green)';
-    err.style.display='block';
+    err.textContent=rfqR.error||'RFQ failed';err.style.display='block';
   }
 }
 
-async function submitNewItemToMaster(){
-  const code=document.getElementById('ni-code').value.trim().toUpperCase();
-  const desc=document.getElementById('ni-desc').value.trim();
-  const cat=document.getElementById('ni-cat').value;
-  const subcat=document.getElementById('ni-subcat').value.trim();
-  const uom=document.getElementById('ni-uom').value;
-  const tax=document.getElementById('ni-tax').value;
-  const moq=document.getElementById('ni-moq').value||1;
-  const rate=document.getElementById('ni-rate').value||0;
-  const err=document.getElementById('ni-err');
-
-  if(!code){err.textContent='Part code is required';err.style.display='block';return;}
-  if(!desc){err.textContent='Description is required';err.style.display='block';return;}
-  if(!cat){err.textContent='Select a category';err.style.display='block';return;}
-
-  err.style.display='none';
-  const btn=document.querySelector('#newItemSh .btn-g');
-  btn.textContent='Adding…';btn.disabled=true;
-
-  const r=await api({
-    action:'addItemToMaster',
-    partCode:code, itemDesc:desc, category:cat, subCategory:subcat,
-    uom, taxPct:tax, moq, latestRate:rate,
-    formRowIndex:_currentNewItem?._rowIndex||0,
-    requestedBy:_currentNewItem?.name||''
-  });
-
-  btn.textContent='Add to Item Master →';btn.disabled=false;
-
-  if(r.ok){
-    toast('✓ '+code+' added to Item Master','ok');
-    csh('newItemSh');
-    _currentNewItem=null;
-    loadNewItemRequests();
-  } else {
-    err.textContent=r.error||'Failed to add item';
-    err.style.display='block';
+async function rejectNewItem(){
+  if(!_currentNewItem){csh('newItemSh');return;}
+  if(_currentNewItem._rowIndex){
+    await api({action:'markNewItemFloated',rowIndex:_currentNewItem._rowIndex,prNum:'',rfqNum:'REJECTED'});
   }
+  toast('Request rejected','ok');
+  csh('newItemSh'); _currentNewItem=null; loadNewItemRequests();
 }
 
 // ── RAW MATERIAL MANUAL PRICE (on Compare screen) ────────
