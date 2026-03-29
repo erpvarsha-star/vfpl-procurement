@@ -299,7 +299,7 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
 
 
 /* ── MOBILE HOME GRID NAVIGATION ── */
-.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .home-grid-hdr{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;}
 .home-tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 10px;cursor:pointer;position:relative;-webkit-tap-highlight-color:transparent;transition:transform .1s;}
 .home-tile:active{opacity:.85;}
@@ -318,13 +318,9 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
 .pipe-sep{color:rgba(255,255,255,.3);font-size:12px;margin:0 2px;}
 #backHomeBtn{display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--surface);border:1.5px solid var(--border);border-radius:24px;padding:11px 22px;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.12);white-space:nowrap;font-family:inherit;}
 .back-arrow-icon{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid var(--ink);flex-shrink:0;}
-@media (max-width:600px){
-  .sec.on{padding-bottom:72px !important;}
-}
-@media (min-width:601px){
-  #homeGrid{display:none !important;}
-  #backHomeBtn{display:none !important;}
-}
+.sec.on{padding-bottom:72px;}
+/* homeGrid is always visible — tab bar hidden for all devices */
+.tabs-wrap{display:none !important;}
 
 </style>
 <link rel="manifest" id="pwa-manifest">
@@ -376,7 +372,7 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
 <div class="tabs-wrap"><div class="tabs" id="tabBar"></div>
 
 <!-- MOBILE HOME GRID -->
-<div id="homeGrid" style="display:none;padding:12px;"></div>
+<div id="homeGrid" style="display:none;padding:12px;max-width:900px;margin:0 auto;"></div>
 
 <!-- MOBILE BACK BTN -->
 <button id="backHomeBtn" onclick="goHome()"><div class="back-arrow-icon"></div>Back to home</button>
@@ -773,7 +769,7 @@ const ROLE_TABS={
   QUALITY:[{id:'qc',lb:'QC Pending',bd:'b-qc'},{id:'qchistory',lb:'QC History'}],
 };
 
-let S={mobileMode:false,urg:'YELLOW',pin:null,user:null,actPR:null,actPO:null,actPOQty:null,actPOUOM:null,grnPhoto:'',pAction:null,pBuf:'',lBuf:'',vToken:null,vRFQ:null,vVendor:null,itemCache:{}};
+let S={urg:'YELLOW',pin:null,user:null,actPR:null,actPO:null,actPOQty:null,actPOUOM:null,grnPhoto:'',pAction:null,pBuf:'',lBuf:'',vToken:null,vRFQ:null,vVendor:null,itemCache:{}};
 
 // Set logo everywhere
 document.getElementById('navImg').src=LOGO;
@@ -821,8 +817,8 @@ async function doLogin(){
       document.getElementById('loginScreen').style.display='none';
       document.getElementById('navUser').textContent=r.name;
       setupTabs(r.role);
-      S.mobileMode=(window.innerWidth<=600||('ontouchstart' in window&&window.innerWidth<=900));
-      if(S.mobileMode){buildHomeGrid(r.role);goHome();}
+      buildHomeGrid(r.role);
+      goHome();
       toast('Welcome, '+r.name,'ok');
     }else{
       document.getElementById('lE').textContent='Incorrect PIN — try again';
@@ -840,7 +836,7 @@ async function doLogin(){
 function setupTabs(role){
   const tabs=ROLE_TABS[role]||ROLE_TABS.PR_RAISER;
   document.getElementById('tabBar').innerHTML=tabs.map((t,i)=>
-    `<div class="tab${i===0?' on':''}" data-tab="${t.id}" onclick="showTab(this)">${window.innerWidth<=600&&t.mb?t.mb:t.lb}${t.bd?`<span class="badge zero" id="${t.bd}">0</span>`:''}</div>`
+    `<div class="tab${i===0?' on':''}" data-tab="${t.id}" onclick="showTab(this)">${t.lb}${t.bd?`<span class="badge zero" id="${t.bd}">0</span>`:''}</div>`
   ).join('');
   showTabById(tabs[0].id);
 }
@@ -856,7 +852,8 @@ function showTab(el){
   if(map[id])map[id]();
 }
 function showTabById(id){
-  if(S.mobileMode){openSection(id);return;}
+  openSection(id);return;
+  // desktop tab bar not used
   const el=document.querySelector('[data-tab="'+id+'"]');
   if(el)showTab(el);else document.getElementById('sec-'+id)?.classList.add('on');
 }
@@ -1852,7 +1849,6 @@ const TILE_NAMES={
 };
 
 function buildHomeGrid(role){
-  if(!S.mobileMode)return;
   const tabs=ROLE_TABS[role]||ROLE_TABS.PR_RAISER;
   const grid=document.getElementById('homeGrid');
   if(!grid)return;
@@ -1909,7 +1905,6 @@ function buildHomeGrid(role){
 }
 
 function openSection(id){
-  if(!S.mobileMode){showTabById(id);return;}
   const grid=document.getElementById('homeGrid');
   if(grid)grid.style.display='none';
   document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('on');});
@@ -1930,15 +1925,12 @@ function goHome(){
   document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('on');});
   const btn=document.getElementById('backHomeBtn');
   if(btn)btn.style.display='none';
-  if(S.mobileMode){
-    const grid=document.getElementById('homeGrid');
-    if(grid)grid.style.display='block';
-    loadDashboard();
-  }
+  const grid=document.getElementById('homeGrid');
+  if(grid)grid.style.display='block';
+  loadDashboard();
 }
 
 function updateTileCounts(r){
-  if(!S.mobileMode)return;
   const c=r.counts||{};
   const pipe=r.pipeline||{};
   const defs=[
