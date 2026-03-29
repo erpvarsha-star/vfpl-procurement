@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0f0e0d">
 <title>VFPL Procurement</title>
@@ -18,7 +17,7 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
 .nav-logo img{width:100%;height:100%;object-fit:cover;}
 .nav-title{font-family:var(--mono);font-size:11px;font-weight:600;color:#fff;letter-spacing:.1em;text-transform:uppercase;}
 .nav-user{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.6);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:4px 9px;cursor:pointer;}
-.tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;position:sticky;top:52px;z-index:99;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;}
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;position:sticky;top:52px;z-index:99;scrollbar-width:none;}
 .tabs::-webkit-scrollbar{display:none;}
 .tab{padding:12px 13px;font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:5px;transition:color .15s,border-color .15s;}
 .tab.on{color:var(--accent);border-bottom-color:var(--accent);}
@@ -159,146 +158,7 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
 .pipe-n{font-size:20px;font-weight:700;line-height:1;}
 .pipe-l{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-top:3px;}
 
-/* ══ RESPONSIVE — MOBILE FIRST ══════════════════════════════ */
-
-/* Base mobile improvements */
-@media (max-width: 600px) {
-  /* Body text slightly larger for readability */
-  body { font-size: 15px; }
-
-  /* NAV — compact on mobile */
-  .nav { height: 48px; padding: 0 10px; }
-
-  /* Hide nav title and brand text on mobile — logo only */
-  .nav-title { display: none !important; }
-  .nav-logo > div { display: none !important; }
-
-  /* User name — show initials only on mobile */
-  .nav-user { 
-    font-size: 11px; 
-    padding: 4px 7px; 
-    max-width: 90px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  /* Logo slightly smaller */
-  .nav-logo img { width: 28px !important; height: 28px !important; }
-
-  /* TAB BAR — larger touch targets on mobile */
-  .tabs { 
-    top: 48px;
-    -webkit-overflow-scrolling: touch;
-  }
-  .tab { 
-    padding: 12px 10px; 
-    font-size: 11px;
-    min-width: 44px;
-    flex-shrink: 0;
-  }
-  /* Fade hint that tabs scroll right */
-  .tabs-wrap { position: relative; }
-  .tabs-wrap::after {
-    content: '';
-    position: absolute;
-    right: 0; top: 0; bottom: 0;
-    width: 28px;
-    background: linear-gradient(to right, transparent, var(--surface));
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  /* MAIN content — less side padding */
-  .main { padding: 12px 10px; }
-  .sec { padding: 0; }
-
-  /* CARDS — full width, better touch */
-  .pr-card { 
-    padding: 14px 12px; 
-    margin-bottom: 10px;
-    border-radius: 10px;
-  }
-
-  /* Larger tap targets for content buttons only */
-  .btn:not(.pin-key) { 
-    padding: 12px 16px; 
-    font-size: 14px;
-  }
-
-  /* KPI tiles — 2 col grid, larger numbers */
-  #dashTiles { 
-    grid-template-columns: 1fr 1fr !important; 
-    gap: 8px;
-  }
-  .dt { padding: 14px 10px; }
-  .dc { font-size: 28px !important; }
-  .dl { font-size: 11px; }
-
-  /* Pipeline strip — scrollable, bigger tap areas */
-  .pipe-stage { 
-    min-width: 62px; 
-    padding: 10px 6px;
-  }
-  .pipe-n { font-size: 22px; }
-  .pipe-l { font-size: 9px; }
-
-  /* Form inputs — larger on mobile */
-  input, select, textarea { 
-    font-size: 16px !important; /* prevents iOS zoom */
-    padding: 11px 12px !important;
-    min-height: 44px;
-  }
-
-  /* Bottom sheets — full width */
-  .sh { border-radius: 20px 20px 0 0; }
-
-  /* KPI grid — 2 col on mobile */
-  .g2 { grid-template-columns: 1fr 1fr; }
-
-  /* PR cards text sizes */
-  .pr-num { font-size: 11px; }
-  .pr-desc { font-size: 14px; font-weight: 600; }
-  .pr-meta { font-size: 12px; }
-
-  /* Chip — slightly larger on mobile */
-  .chip { font-size: 10px; padding: 3px 7px; }
-
-  /* Login screen */
-  #loginScreen { padding: 20px 16px; }
-
-  /* Approve/Compare cards */
-  .appr-card, .cmp-card { padding: 12px; }
-
-  /* Section titles */
-  .sec > div:first-child { font-size: 13px; }
-}
-
-/* TABLET — 601–900px */
-@media (min-width: 601px) and (max-width: 900px) {
-  body { font-size: 15px; }
-  .main { padding: 16px 20px; }
-  .tab { font-size: 11px; padding: 12px 12px; }
-}
-
-/* DESKTOP — 901px+ */
-@media (min-width: 901px) {
-  body { font-size: 14px; }
-  .main { 
-    max-width: 720px; 
-    margin: 0 auto; 
-    padding: 20px 24px;
-  }
-  /* On desktop, show full nav brand */
-  .nav-brand span { display: inline; }
-  /* Desktop: login screen centered card */
-  #loginScreen { 
-    justify-content: center;
-  }
-}
-
-
-/* ── MOBILE HOME GRID NAVIGATION ── */
+/* ── HOME GRID NAVIGATION ── */
 .home-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .home-grid-hdr{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;}
 .home-tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 10px;cursor:pointer;position:relative;-webkit-tap-highlight-color:transparent;transition:transform .1s;}
@@ -319,15 +179,6 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
 #backHomeBtn{display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--surface);border:1.5px solid var(--border);border-radius:24px;padding:11px 22px;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.12);white-space:nowrap;font-family:inherit;}
 .back-arrow-icon{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid var(--ink);flex-shrink:0;}
 .sec.on{padding-bottom:72px;}
-/* homeGrid is always visible — tab bar hidden for all devices */
-.tabs-wrap{
-  position:absolute;
-  left:-9999px;
-  top:-9999px;
-  opacity:0;
-  pointer-events:none;
-}
-
 </style>
 <link rel="manifest" id="pwa-manifest">
 <meta name="apple-mobile-web-app-title" content="VFPL PRO">
@@ -375,7 +226,7 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
   <div class="nav-user" id="navUser">—</div>
 </nav>
 
-<div class="tabs-wrap"><div class="tabs" id="tabBar"></div></div>
+<div class="tabs" id="tabBar"></div>
 
 <!-- MOBILE HOME GRID -->
 <div id="homeGrid" style="display:none;padding:12px;max-width:900px;margin:0 auto;"></div>
@@ -526,6 +377,42 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
   </div></div>
 </div>
 
+<!-- QC PENDING -->
+<div class="sec" id="sec-qc">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <div style="font-size:13px;font-weight:600;">Pending Quality Check</div>
+    <button class="btn btn-s btn-sm" onclick="loadQC()">↻ Refresh</button>
+  </div>
+  <div id="qcList"><div class="em">Loading…</div></div>
+</div>
+
+<!-- QC HISTORY -->
+<div class="sec" id="sec-qchistory">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <div style="font-size:13px;font-weight:600;">Quality Check History</div>
+    <button class="btn btn-s btn-sm" onclick="loadQCHistory()">↻ Refresh</button>
+  </div>
+  <div id="qcHistoryList"><div class="em">Loading…</div></div>
+</div>
+
+<!-- INVOICE UPLOAD -->
+<div class="sec" id="sec-invoice">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <div style="font-size:13px;font-weight:600;">Upload Invoice</div>
+    <button class="btn btn-s btn-sm" onclick="loadPendingInvoices()">↻ Refresh</button>
+  </div>
+  <div id="invoiceList"><div class="em">Loading…</div></div>
+</div>
+
+<!-- MY GRNs -->
+<div class="sec" id="sec-mygrns">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <div style="font-size:13px;font-weight:600;">My GRN History</div>
+    <button class="btn btn-s btn-sm" onclick="loadMyGRNs()">↻ Refresh</button>
+  </div>
+  <div id="myGRNList"><div class="em">Loading…</div></div>
+</div>
+
 
 <!-- RFQ TERMS SHEET -->
 <div class="sh-bg" id="rfqTermsSh">
@@ -585,43 +472,6 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
   </div>
 </div>
 
-
-<!-- QC PENDING -->
-<div class="sec" id="sec-qc">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-    <div style="font-size:13px;font-weight:600;">Pending Quality Check</div>
-    <button class="btn btn-s btn-sm" onclick="loadQC()">↻ Refresh</button>
-  </div>
-  <div id="qcList"><div class="em">Loading…</div></div>
-</div>
-
-<!-- QC HISTORY -->
-<div class="sec" id="sec-qchistory">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-    <div style="font-size:13px;font-weight:600;">Quality Check History</div>
-    <button class="btn btn-s btn-sm" onclick="loadQCHistory()">↻ Refresh</button>
-  </div>
-  <div id="qcHistoryList"><div class="em">Loading…</div></div>
-</div>
-
-<!-- INVOICE UPLOAD -->
-<div class="sec" id="sec-invoice">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-    <div style="font-size:13px;font-weight:600;">Upload Invoice</div>
-    <button class="btn btn-s btn-sm" onclick="loadPendingInvoices()">↻ Refresh</button>
-  </div>
-  <div id="invoiceList"><div class="em">Loading…</div></div>
-</div>
-
-<!-- MY GRNs -->
-<div class="sec" id="sec-mygrns">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-    <div style="font-size:13px;font-weight:600;">My GRN History</div>
-    <button class="btn btn-s btn-sm" onclick="loadMyGRNs()">↻ Refresh</button>
-  </div>
-  <div id="myGRNList"><div class="em">Loading…</div></div>
-</div>
-
 <!-- QC REJECT SHEET -->
 <div class="sh-bg" id="qcRejectSh">
   <div class="sh">
@@ -668,16 +518,16 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
     <div id="inv-po-info" style="background:#f5f5f0;border-radius:var(--r);padding:10px 12px;margin-bottom:14px;font-size:12px;"></div>
     <div class="g2">
       <div class="fg">
-        <label>Invoice Number <span style="color:#DC2626;">*</span></label>
+        <label>Invoice Number *</label>
         <input type="text" id="inv-number" placeholder="e.g. INV/2526/1234">
       </div>
       <div class="fg">
-        <label>Invoice Amount (₹) <span style="color:#DC2626;">*</span></label>
+        <label>Invoice Amount (₹) *</label>
         <input type="number" id="inv-amount" placeholder="0.00" step="0.01">
       </div>
     </div>
     <div class="fg">
-      <label>Invoice Photo <span style="color:#DC2626;">*</span></label>
+      <label>Invoice Photo *</label>
       <div style="border:2px dashed #ddd;border-radius:var(--r);padding:16px;text-align:center;cursor:pointer;" onclick="document.getElementById('inv-photo-input').click()">
         <div id="inv-photo-preview" style="font-size:12px;color:var(--muted);">📷 Tap to capture invoice photo</div>
         <input type="file" id="inv-photo-input" accept="image/*" capture="environment" style="display:none" onchange="previewInvPhoto(this)">
@@ -768,14 +618,14 @@ const LOGO='data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJT
 const ROLE_TABS={
   RAISER:[{id:'raise',lb:'New PR'},{id:'myprs',lb:'My PRs'},{id:'dashboard',lb:'Dashboard'}],
   PR_RAISER:[{id:'raise',lb:'New PR'},{id:'myprs',lb:'My PRs'},{id:'dashboard',lb:'Dashboard'}],
-  PURCHASE_OFFICER:[{id:'review',lb:'Review PRs',mb:'PRs',bd:'b-rev'},{id:'rfq',lb:'RFQ Status',mb:'RFQs',bd:'b-rfq'},{id:'compare',lb:'Compare',mb:'Compare',bd:'b-cmp'},{id:'grn',lb:'GRN Entry',mb:'GRN',bd:'b-grn'},{id:'invoice',lb:'Invoices',mb:'Invoice',bd:'b-inv'},{id:'pos',lb:'All POs',mb:'POs'},{id:'dashboard',lb:'Dashboard',mb:'Dash'}],
+  PURCHASE_OFFICER:[{id:'review',lb:'Review PRs',bd:'b-rev'},{id:'rfq',lb:'RFQ Status',bd:'b-rfq'},{id:'compare',lb:'Compare',bd:'b-cmp'},{id:'grn',lb:'GRN Entry',bd:'b-grn'},{id:'invoice',lb:'Invoices',bd:'b-inv'},{id:'pos',lb:'All POs'},{id:'dashboard',lb:'Dashboard'}],
   PURCHASE_MANAGER:[{id:'compare',lb:'Compare',bd:'b-cmp'},{id:'rfq',lb:'RFQ Status'},{id:'pos',lb:'All POs'},{id:'dashboard',lb:'Dashboard'}],
   PO_APPROVER:[{id:'approve',lb:'Approve',bd:'b-app'},{id:'compare',lb:'Compare'},{id:'review',lb:'Review PRs'},{id:'rfq',lb:'RFQ Status'},{id:'grn',lb:'GRN Entry'},{id:'invoice',lb:'Invoices',bd:'b-inv'},{id:'pos',lb:'All POs'},{id:'dashboard',lb:'Dashboard'}],
   GRN_GATE:[{id:'grn',lb:'GRN Entry',bd:'b-grn'},{id:'invoice',lb:'Invoices',bd:'b-inv'},{id:'mygrns',lb:'My GRNs'},{id:'dashboard',lb:'Dashboard'}],
   QUALITY:[{id:'qc',lb:'QC Pending',bd:'b-qc'},{id:'qchistory',lb:'QC History'}],
 };
 
-let S={urg:'YELLOW',pin:null,user:null,actPR:null,actPO:null,actPOQty:null,actPOUOM:null,grnPhoto:'',pAction:null,pBuf:'',lBuf:'',vToken:null,vRFQ:null,vVendor:null,itemCache:{}};
+let S={urg:'YELLOW',pin:null,user:null,actPR:null,actPO:null,actPOQty:null,actPOUOM:null,grnPhoto:'',pAction:null,pBuf:'',lBuf:'',vToken:null,vRFQ:null,vVendor:null,itemCache:{},rfqTerms:null,actQCGRN:null,actQCPO:null,qcPhotoData:'',actInvPO:null,actInvAmt:0,invPhotoData:'',qcItems:[]};
 
 // Set logo everywhere
 document.getElementById('navImg').src=LOGO;
@@ -823,8 +673,6 @@ async function doLogin(){
       document.getElementById('loginScreen').style.display='none';
       document.getElementById('navUser').textContent=r.name;
       setupTabs(r.role);
-      buildHomeGrid(r.role);
-      goHome();
       toast('Welcome, '+r.name,'ok');
     }else{
       document.getElementById('lE').textContent='Incorrect PIN — try again';
@@ -844,13 +692,13 @@ function setupTabs(role){
   document.getElementById('tabBar').innerHTML=tabs.map((t,i)=>
     `<div class="tab${i===0?' on':''}" data-tab="${t.id}" onclick="showTab(this)">${t.lb}${t.bd?`<span class="badge zero" id="${t.bd}">0</span>`:''}</div>`
   ).join('');
-  showTabById(tabs[0].id);
+  buildHomeGrid(role);
+  goHome();
 }
 function showTab(el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
   el.classList.add('on');
-  // Scroll active tab into view on mobile
   el.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
   const id=el.dataset.tab;
   document.getElementById('sec-'+id)?.classList.add('on');
@@ -858,9 +706,7 @@ function showTab(el){
   if(map[id])map[id]();
 }
 function showTabById(id){
-  openSection(id);return;
-  // desktop tab bar not used
-  const el=document.querySelector('[data-tab="'+id+'"]');
+  const el=document.querySelector(`[data-tab="${id}"]`);
   if(el)showTab(el);else document.getElementById('sec-'+id)?.classList.add('on');
 }
 
@@ -1351,11 +1197,7 @@ async function loadGRN(){
     const r=await api({action:'getPOsForGRN'});
     if(!r.ok||!r.pos.length){el.innerHTML='<div class="em">No POs pending delivery</div>';setBdg('b-grn',0);return;}
     setBdg('b-grn',r.pos.length);
-    const stC={'PO_ISSUED':'chip-b','GOODS_RECEIVED':'chip-o','QC_PASSED':'chip-p','QC_FAILED':'chip-r','INVOICE_RECEIVED':'chip-y','CLOSED':'chip-g','COMPLETED':'chip-g','PARTIAL_DELIVERY':'chip-y'};
-    const stL={'PO_ISSUED':'Issued','GOODS_RECEIVED':'GRN Done','QC_PASSED':'QC Passed','QC_FAILED':'QC Failed','INVOICE_RECEIVED':'Invoice In','CLOSED':'Closed','COMPLETED':'Completed','PARTIAL_DELIVERY':'Partial'};
-    const poList=S.poStatusFilter?r.pos.filter(p=>p.status===S.poStatusFilter):r.pos;
-    S.poStatusFilter=null;
-    el.innerHTML=poList.map(po=>{
+    el.innerHTML=r.pos.map(po=>{
       const pq=parseFloat(po.qty)||0;
       const rcvd=parseFloat(po.receivedQty)||0;
       const bal=Math.max(0,pq-rcvd);
@@ -1437,30 +1279,16 @@ async function loadDashboard(){
     const c=r.counts;
     const role=S.user&&S.user.role||'';
     const tiles=[
-      {n:c.prPending||0,   lb:'PRs pending',     col:'var(--accent2)', clickId:'review'},
-      {n:c.rfqActive||0,   lb:'RFQs active',     col:'var(--amber)',   clickId:'rfq'},
-      {n:c.pendingApproval||0, lb:'Awaiting approval', col:'var(--accent)', clickId:'approve'},
+      {n:c.prPending||0,    lb:'PRs pending',         col:'var(--accent2)', clickId:'review'},
+      {n:c.rfqActive||0,    lb:'RFQs active',          col:'var(--amber)',   clickId:'rfq'},
+      {n:c.pendingApproval||0, lb:'Awaiting approval', col:'var(--accent)',  clickId:'approve'},
     ];
-    if(['QUALITY','PURCHASE_OFFICER','PO_APPROVER'].includes(role)&&(c.qcPending||0)>0)
-      tiles.push({n:c.qcPending,lb:'QC pending',col:'#F59E0B'});
+    if((c.qcPending||0)>0)
+      tiles.push({n:c.qcPending,lb:'QC pending',col:'#F59E0B',clickId:'qc'});
     if((c.invoicesPending||0)>0)
-      tiles.push({n:c.invoicesPending,lb:'Invoices pending',col:'#7C3AED'});
-    if(['PO_APPROVER','PURCHASE_MANAGER'].includes(role)&&(c.paymentDue||0)>0)
-      tiles.push({n:c.paymentDue,lb:'Payments due',col:'#DC2626'});
+      tiles.push({n:c.invoicesPending,lb:'Invoices pending',col:'#7C3AED',clickId:'invoice'});
     document.getElementById('dashTiles').innerHTML=tiles
-      .map(t=>`<div class="dt" style="cursor:pointer;" onclick="showTabById('${t.clickId||''}')"><div class="dc" style="color:${t.col};">${t.n}</div><div class="dl">${t.lb}</div><div class="db" style="background:${t.col};opacity:.3;"></div></div>`).join('');
-    // Pipeline strip
-    if(r.pipeline&&['PURCHASE_OFFICER','PURCHASE_MANAGER','PO_APPROVER','GRN_GATE'].includes(role)){
-      const pp=document.getElementById('poPipeline');
-      if(pp){
-        pp.style.display='';
-        document.getElementById('pipe-n-issued').textContent=r.pipeline.poIssued||0;
-        document.getElementById('pipe-n-grn').textContent=r.pipeline.goodsReceived||0;
-        document.getElementById('pipe-n-qc').textContent=r.pipeline.qcPassed||0;
-        document.getElementById('pipe-n-inv').textContent=r.pipeline.invoiceReceived||0;
-        document.getElementById('pipe-n-closed').textContent=r.pipeline.posClosed||0;
-      }
-    }
+      .map(t=>`<div class="dt" style="cursor:pointer;" onclick="openSection('${t.clickId||''}')"><div class="dc" style="color:${t.col};">${t.n}</div><div class="dl">${t.lb}</div><div class="db" style="background:${t.col};opacity:.3;"></div></div>`).join('');
     updateTileCounts(r);
     const feed=r.feed||[];
     const dc={po:'var(--green)',pr:'var(--accent)',rfq:'var(--accent2)'};
@@ -1607,246 +1435,49 @@ function checkConsolidation(approvals){
   return multi.length>0?multi:null;
 }
 
-
-// ── QC FUNCTIONS ────────────────────────────────────────────
-let actQCItem = null;
-
-async function loadQC(){
-  const el=document.getElementById('qcList');
-  if(!el)return;
-  el.innerHTML='<div class="em">Loading…</div>';
-  try{
-    const r=await api({action:'getPendingQC'});
-    setBdg('b-qc', (r.grns||[]).length);
-    if(!(r.grns||[]).length){el.innerHTML='<div class="em">No items pending quality check</div>';return;}
-    el.innerHTML=(r.grns||[]).map((g,i)=>`
-      <div class="pr-card" style="cursor:pointer;" onclick="openQCItem(${i})">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-          <div>
-            <div class="pr-num">${g.grnNum} · GRN ${g.grnDate}</div>
-            <div class="pr-desc">${g.itemDesc}</div>
-            <div class="pr-meta">PO: ${g.poNum} · ${g.rcvdQty} ${g.poQty?'of '+g.poQty:''} · ${g.vendorName}</div>
-          </div>
-          <span class="chip chip-y">QC Pending</span>
-        </div>
-        ${g.photoLink?`<div style="margin-top:8px;"><a href="${g.photoLink}" target="_blank" style="font-size:11px;color:#3B82F6;">📷 View GRN Photo</a></div>`:''}
-        <div class="btn-row" style="margin-top:10px;">
-          <button class="btn btn-s" style="background:#15803D;color:#fff;flex:1;" onclick="event.stopPropagation();doQCApprove('${g.grnNum}','${g.poNum}')">✓ Pass</button>
-          <button class="btn btn-s" style="background:#DC2626;color:#fff;flex:1;" onclick="event.stopPropagation();openQCReject('${g.grnNum}','${g.poNum}')">✗ Reject</button>
-        </div>
-      </div>`).join('');
-    S.qcItems = r.grns;
-  }catch(e){el.innerHTML='<div class="em">Error. Tap refresh.</div>';}
+// ── openSection / goHome — HOME GRID NAVIGATION ──────────────
+function openSection(id){
+  // Hide home grid, show back button
+  const hg=document.getElementById('homeGrid');
+  if(hg)hg.style.display='none';
+  const bb=document.getElementById('backHomeBtn');
+  if(bb)bb.style.display='flex';
+  // Hide all sections, show the target
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  const sec=document.getElementById('sec-'+id);
+  if(sec)sec.classList.add('on');
+  // Trigger loader
+  const loaders={review:loadReview,rfq:loadRFQ,compare:loadCompare,approve:loadApprove,
+    grn:loadGRN,pos:loadPOs,dashboard:loadDashboard,myprs:loadMyPRs,
+    qc:loadQC,qchistory:loadQCHistory,invoice:loadPendingInvoices,mygrns:loadMyGRNs};
+  if(loaders[id])loaders[id]();
 }
 
-function openQCItem(idx){
-  // Future: open detail modal
+function goHome(){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  const bb=document.getElementById('backHomeBtn');
+  if(bb)bb.style.display='none';
+  const hg=document.getElementById('homeGrid');
+  if(hg)hg.style.display='block';
+  loadDashboard();
 }
 
-async function doQCApprove(grnNum, poNum){
-  if(!confirm('Confirm: Material PASSED quality check?'))return;
-  toast('Recording QC pass…','ok');
-  try{
-    const r=await api({action:'recordQC',grnNum,poNum,decision:'PASS',qcBy:S.user&&S.user.name||'Quality'});
-    if(r.ok){toast('QC Passed — PO ready for invoice','ok');loadQC();loadDashboard();}
-    else toast(r.error||'Failed','err');
-  }catch(e){toast('Error','err');}
-}
-
-function openQCReject(grnNum, poNum){
-  S.actQCGRN = grnNum;
-  S.actQCPO  = poNum;
-  document.getElementById('qc-reason').value='';
-  document.getElementById('qc-remarks').value='';
-  document.getElementById('qc-photo-preview').textContent='📷 Tap to capture / select photo';
-  S.qcPhotoData='';
-  document.getElementById('qcRejectSh').classList.add('on');
-}
-
-function previewQCPhoto(input){
-  if(!input.files||!input.files[0])return;
-  const file=input.files[0];
-  const reader=new FileReader();
-  reader.onload=e=>{
-    S.qcPhotoData=e.target.result;
-    document.getElementById('qc-photo-preview').innerHTML=`<img src="${e.target.result}" style="max-height:120px;border-radius:6px;">`;
-  };
-  reader.readAsDataURL(file);
-}
-
-async function submitQCReject(){
-  const reason=document.getElementById('qc-reason').value;
-  const remarks=document.getElementById('qc-remarks').value;
-  if(!reason){toast('Select a rejection reason','err');return;}
-  const fullReason = remarks ? reason+' — '+remarks : reason;
-  toast('Sending rejection…','ok');
-  csh('qcRejectSh');
-  try{
-    const r=await api({action:'recordQC',
-      grnNum:S.actQCGRN, poNum:S.actQCPO,
-      decision:'FAIL', reason:fullReason,
-      qcBy:S.user&&S.user.name||'Quality',
-      qcPhotoData:S.qcPhotoData||''
-    });
-    if(r.ok){toast('Rejection recorded. Vendor & Officer notified.','ok');loadQC();loadDashboard();}
-    else toast(r.error||'Failed','err');
-  }catch(e){toast('Error','err');}
-}
-
-async function loadQCHistory(){
-  const el=document.getElementById('qcHistoryList');
-  if(!el)return;
-  el.innerHTML='<div class="em">Loading…</div>';
-  try{
-    const r=await api({action:'getPendingQC',status:'all'});
-    if(!(r.grns||[]).length){el.innerHTML='<div class="em">No QC records yet</div>';return;}
-    el.innerHTML=(r.grns||[]).map(g=>`
-      <div class="pr-card">
-        <div style="display:flex;justify-content:space-between;">
-          <div>
-            <div class="pr-num">${g.grnNum} · ${g.grnDate}</div>
-            <div class="pr-desc">${g.itemDesc}</div>
-            <div class="pr-meta">${g.vendorName} · ${g.rcvdQty} received</div>
-          </div>
-          <span class="chip ${g.status==='QC_PASSED'?'chip-g':g.status==='QC_FAILED'?'chip-r':'chip-y'}">${g.status==='QC_PASSED'?'Passed':g.status==='QC_FAILED'?'Failed':'Pending'}</span>
-        </div>
-      </div>`).join('');
-  }catch(e){el.innerHTML='<div class="em">Error loading history</div>';}
-}
-
-// ── INVOICE FUNCTIONS ────────────────────────────────────────
-let actInvPO = null;
-
-async function loadPendingInvoices(){
-  const el=document.getElementById('invoiceList');
-  if(!el)return;
-  el.innerHTML='<div class="em">Loading…</div>';
-  try{
-    const r=await api({action:'getPendingInvoices'});
-    setBdg('b-inv',(r.pending||[]).length);
-    setBdg('kpi-inv',(r.pending||[]).length);
-    if(!(r.pending||[]).length){el.innerHTML='<div class="em">No invoices pending</div>';return;}
-    el.innerHTML=(r.pending||[]).map(p=>`
-      <div class="pr-card ${p.overdue?'urg':''}" style="cursor:pointer;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-          <div>
-            <div class="pr-num">${p.poNum} · ${p.poDate}</div>
-            <div class="pr-desc">${p.itemDesc}</div>
-            <div class="pr-meta">${p.vendorName} · ₹${Number(p.totalAmt||0).toLocaleString('en-IN')}</div>
-          </div>
-          ${p.overdue?'<span class="chip chip-r">'+p.daysSinceGRN+'d overdue</span>':'<span class="chip chip-p">QC Passed</span>'}
-        </div>
-        ${p.overdue?'<div style="font-size:11px;color:#DC2626;margin-bottom:8px;">⚠️ GRN done '+p.daysSinceGRN+' days ago — invoice not received</div>':''}
-        <button class="btn btn-b btn-sm" style="width:100%;" onclick="openInvoiceUpload('${p.poNum}','${p.vendorName}',${p.totalAmt||0})">Upload Invoice</button>
-      </div>`).join('');
-  }catch(e){el.innerHTML='<div class="em">Error. Tap refresh.</div>';}
-}
-
-function openInvoiceUpload(poNum, vendorName, poAmt){
-  S.actInvPO   = poNum;
-  S.actInvAmt  = poAmt;
-  document.getElementById('inv-number').value='';
-  document.getElementById('inv-amount').value='';
-  document.getElementById('inv-photo-preview').textContent='📷 Tap to capture invoice photo';
-  document.getElementById('inv-match-warning').style.display='none';
-  S.invPhotoData='';
-  const info=document.getElementById('inv-po-info');
-  if(info)info.innerHTML=`<strong>${poNum}</strong> — ${vendorName}<br>PO Amount: <strong>₹${Number(poAmt).toLocaleString('en-IN')}</strong>`;
-  document.getElementById('invoiceSh').classList.add('on');
-}
-
-function previewInvPhoto(input){
-  if(!input.files||!input.files[0])return;
-  const file=input.files[0];
-  const reader=new FileReader();
-  reader.onload=e=>{
-    S.invPhotoData=e.target.result;
-    document.getElementById('inv-photo-preview').innerHTML=`<img src="${e.target.result}" style="max-height:120px;border-radius:6px;">`;
-  };
-  reader.readAsDataURL(file);
-}
-
-document.addEventListener('DOMContentLoaded',()=>{
-  const invAmt=document.getElementById('inv-amount');
-  if(invAmt){
-    invAmt.addEventListener('input',()=>{
-      const entered=parseFloat(invAmt.value)||0;
-      const poAmt=S.actInvAmt||0;
-      const warn=document.getElementById('inv-match-warning');
-      if(!warn||!poAmt)return;
-      const diff=Math.abs(entered-poAmt)/poAmt*100;
-      if(diff>2){
-        warn.style.display='';
-        warn.textContent=`⚠️ Invoice amount ₹${entered.toLocaleString('en-IN')} differs from PO amount ₹${Number(poAmt).toLocaleString('en-IN')} by ${diff.toFixed(1)}%. This will be flagged for review.`;
-      }else{
-        warn.style.display='none';
-      }
-    });
-  }
-});
-
-async function submitInvoice(){
-  const invNum=document.getElementById('inv-number').value.trim();
-  const invAmt=document.getElementById('inv-amount').value;
-  if(!invNum){toast('Enter invoice number','err');return;}
-  if(!invAmt||parseFloat(invAmt)<=0){toast('Enter invoice amount','err');return;}
-  if(!S.invPhotoData){toast('Invoice photo is required','err');return;}
-  const btn=document.getElementById('invSubmitBtn');
-  if(btn){btn.disabled=true;btn.textContent='Uploading…';}
-  csh('invoiceSh');
-  try{
-    const r=await api({action:'uploadInvoice',
-      poNum:S.actInvPO,
-      invoiceNumber:invNum,
-      invoiceAmount:parseFloat(invAmt),
-      photoData:S.invPhotoData,
-      uploadedBy:S.user&&S.user.name||'Officer'
-    });
-    if(r.ok){toast('Invoice uploaded — PO closed','ok');loadPendingInvoices();loadDashboard();}
-    else toast(r.error||'Failed','err');
-  }catch(e){toast('Error uploading invoice','err');}
-  finally{if(btn){btn.disabled=false;btn.textContent='Submit Invoice';}}
-}
-
-// ── MY GRNs ──────────────────────────────────────────────────
-async function loadMyGRNs(){
-  const el=document.getElementById('myGRNList');
-  if(!el)return;
-  el.innerHTML='<div class="em">Loading…</div>';
-  try{
-    const r=await api({action:'getPOsForGRN',status:'all'});
-    el.innerHTML='<div class="em">GRN history coming soon</div>';
-  }catch(e){el.innerHTML='<div class="em">Error</div>';}
-}
-
-// ── PO STATUS FILTER ─────────────────────────────────────────
-function filterPOsByStatus(status){
-  showTabById('pos');
-  S.poStatusFilter=status;
-  loadPOs();
-}
-
-// ── UPDATE loadPOs to show status pipeline column ─────────────
-// (handled in loadPOs update below — status chip added to each row)
-
-
-// ── MOBILE HOME NAVIGATION ────────────────────────────────────
+// ── BUILD HOME GRID ───────────────────────────────────────────
 const TILE_CFG={
   raise:    {bg:'#EFF6FF',ic:'PR',tc:'#1D4ED8'},
   myprs:    {bg:'#EFF6FF',ic:'PR',tc:'#1D4ED8'},
-  review:   {bg:'#FFF7ED',ic:'RV',tc:'#C2410C',ck:'prPending'},
-  rfq:      {bg:'#F5F3FF',ic:'RQ',tc:'#6D28D9',ck:'rfqActive'},
+  review:   {bg:'#FFF7ED',ic:'RV',tc:'#C2410C'},
+  rfq:      {bg:'#F5F3FF',ic:'RQ',tc:'#6D28D9'},
   compare:  {bg:'#F0FDF4',ic:'CM',tc:'#15803D'},
-  approve:  {bg:'#EFF6FF',ic:'AP',tc:'#1D4ED8',ck:'pendingApproval'},
+  approve:  {bg:'#EFF6FF',ic:'AP',tc:'#1D4ED8'},
   grn:      {bg:'#FFFBEB',ic:'GR',tc:'#92400E'},
-  invoice:  {bg:'#FFFBEB',ic:'IN',tc:'#92400E',ck:'invoicesPending'},
+  invoice:  {bg:'#FFFBEB',ic:'IN',tc:'#92400E'},
   pos:      {bg:'#F0FDF4',ic:'PO',tc:'#15803D'},
-  qc:       {bg:'#FEF3C7',ic:'QC',tc:'#B45309',ck:'qcPending'},
+  qc:       {bg:'#FEF3C7',ic:'QC',tc:'#B45309'},
   qchistory:{bg:'#F3F4F6',ic:'QH',tc:'#6B7280'},
   mygrns:   {bg:'#F3F4F6',ic:'GH',tc:'#6B7280'},
   dashboard:{bg:'#1a1208',ic:'DB',tc:'#fff',special:true}
 };
-
 const TILE_NAMES={
   raise:'New PR',myprs:'My PRs',review:'Review PRs',rfq:'RFQ Status',
   compare:'Compare',approve:'Approve',grn:'GRN Entry',invoice:'Invoices',
@@ -1858,19 +1489,18 @@ function buildHomeGrid(role){
   const tabs=ROLE_TABS[role]||ROLE_TABS.PR_RAISER;
   const grid=document.getElementById('homeGrid');
   if(!grid)return;
-  const regular=tabs.filter(function(t){return t.id!=='dashboard';});
-  const hasDash=tabs.find(function(t){return t.id==='dashboard';});
-  // Build via DOM — avoids ALL quote escaping issues
+  const regular=tabs.filter(t=>t.id!=='dashboard');
+  const hasDash=tabs.find(t=>t.id==='dashboard');
   grid.innerHTML='<p class="home-grid-hdr">What do you want to do?</p>';
   const gd=document.createElement('div');
   gd.className='home-grid';
-  regular.forEach(function(t){
+  regular.forEach(t=>{
     const m=TILE_CFG[t.id]||{bg:'#F3F4F6',ic:'--',tc:'#888'};
     const nm=TILE_NAMES[t.id]||t.lb;
     const tile=document.createElement('div');
     tile.className='home-tile';
     tile.id='htile-'+t.id;
-    (function(id){tile.onclick=function(){openSection(id);};})(t.id);
+    tile.onclick=(function(id){return function(){openSection(id);};})(t.id);
     const dot=document.createElement('div');
     dot.className='tile-dot';dot.id='tdot-'+t.id;
     const ico=document.createElement('div');
@@ -1879,9 +1509,9 @@ function buildHomeGrid(role){
     const nm2=document.createElement('div');
     nm2.className='tile-nm';nm2.textContent=nm;
     const cnt=document.createElement('div');
-    cnt.className='tile-cnt tc-gry';cnt.id='tcnt-'+t.id;cnt.textContent='--';
+    cnt.className='tile-cnt tc-gry';cnt.id='tcnt-'+t.id;cnt.textContent='—';
     const age=document.createElement('div');
-    age.className='tile-age';age.id='tage-'+t.id;age.textContent='loading...';
+    age.className='tile-age';age.id='tage-'+t.id;age.textContent='';
     tile.appendChild(dot);tile.appendChild(ico);tile.appendChild(nm2);
     tile.appendChild(cnt);tile.appendChild(age);
     gd.appendChild(tile);
@@ -1905,135 +1535,249 @@ function buildHomeGrid(role){
     gd.appendChild(dash);
   }
   grid.appendChild(gd);
-  grid.style.display='block';
-  const tw=document.querySelector('.tabs-wrap');
-  if(tw)tw.style.display='none';
 }
 
-function openSection(id){
-  const grid=document.getElementById('homeGrid');
-  if(grid)grid.style.display='none';
-  document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('on');});
-  const sec=document.getElementById('sec-'+id);
-  if(sec)sec.classList.add('on');
-  const btn=document.getElementById('backHomeBtn');
-  if(btn)btn.style.display='flex';
-  const loaders={
-    review:loadReview,rfq:loadRFQ,compare:loadCompare,approve:loadApprove,
-    grn:loadGRN,pos:loadPOs,dashboard:loadDashboard,myprs:loadMyPRs,
-    qc:loadQC,qchistory:loadQCHistory,invoice:loadPendingInvoices,
-    mygrns:loadMyGRNs,raise:function(){}
-  };
-  if(loaders[id])loaders[id]();
-}
-
-function goHome(){
-  document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('on');});
-  const btn=document.getElementById('backHomeBtn');
-  if(btn)btn.style.display='none';
-  const grid=document.getElementById('homeGrid');
-  if(grid)grid.style.display='block';
-  loadDashboard();
-}
-
+// ── UPDATE TILE COUNTS (called from loadDashboard) ─────────────
 function updateTileCounts(r){
   const c=r.counts||{};
   const pipe=r.pipeline||{};
   const defs=[
-    {id:'approve', n:c.pendingApproval||0, urgent:true},
-    {id:'review',  n:c.prPending||0,       urgent:(c.prPending||0)>0},
-    {id:'rfq',     n:c.rfqActive||0,       urgent:false},
-    {id:'qc',      n:c.qcPending||0,       urgent:(c.qcPending||0)>0},
-    {id:'invoice', n:c.invoicesPending||0, urgent:(c.invoicesPending||0)>0},
-    {id:'compare', n:0,                    urgent:false},
-    {id:'pos',     n:0,                    urgent:false},
-    {id:'grn',     n:0,                    urgent:false},
-    {id:'raise',   n:0,                    urgent:false},
-    {id:'myprs',   n:0,                    urgent:false},
+    {id:'approve',n:c.pendingApproval||0,urgent:true},
+    {id:'review', n:c.prPending||0,      urgent:(c.prPending||0)>0},
+    {id:'rfq',    n:c.rfqActive||0,      urgent:false},
+    {id:'qc',     n:c.qcPending||0,      urgent:(c.qcPending||0)>0},
+    {id:'invoice',n:c.invoicesPending||0,urgent:(c.invoicesPending||0)>0},
+    {id:'compare',n:0,urgent:false},
+    {id:'pos',    n:0,urgent:false},
+    {id:'grn',    n:0,urgent:false},
+    {id:'raise',  n:0,urgent:false},
+    {id:'myprs',  n:0,urgent:false},
   ];
-  defs.forEach(function(d){
+  defs.forEach(d=>{
     const cEl=document.getElementById('tcnt-'+d.id);
     const dEl=document.getElementById('tdot-'+d.id);
-    const aEl=document.getElementById('tage-'+d.id);
     if(!cEl)return;
     if(d.n>0){
       cEl.textContent=d.n+' pending';
       cEl.className='tile-cnt '+(d.urgent?'tc-red':'tc-amb');
       if(dEl)dEl.style.background=d.urgent?'#DC2626':'#F59E0B';
-      if(aEl)aEl.textContent='';
     }else{
       cEl.textContent='All clear';
       cEl.className='tile-cnt tc-grn';
       if(dEl)dEl.style.background='#D1FAE5';
-      if(aEl)aEl.textContent='';
     }
   });
   // Pipeline pills in dashboard tile
   const pp=[pipe.poIssued||0,pipe.goodsReceived||0,pipe.qcPassed||0,pipe.posClosed||0];
-  ['pp0','pp1','pp2','pp3'].forEach(function(id,i){
-    const el=document.getElementById(id);
-    if(el)el.textContent=pp[i];
-  });
-  // Age from feed — oldest item per type
-  const now=new Date();
-  const seen={};
-  (r.feed||[]).reverse().forEach(function(f){
-    if(!f.time||seen[f.type])return;
-    const days=Math.floor((now-new Date(f.time))/86400000);
-    if(days<1)return;
-    const map={pr:'review',po:'approve'};
-    const tid=map[f.type];
-    if(tid&&!seen[tid]){
-      seen[tid]=true;
-      const aEl=document.getElementById('tage-'+tid);
-      if(aEl)aEl.textContent='oldest: '+days+'d ago';
-    }
+  ['pp0','pp1','pp2','pp3'].forEach((id,i)=>{
+    const el=document.getElementById(id);if(el)el.textContent=pp[i];
   });
 }
 
-// resize handler removed — caused PIN screen dancing on mobile keyboard open
+// ── QC FUNCTIONS ─────────────────────────────────────────────
+async function loadQC(){
+  const el=document.getElementById('qcList');
+  if(!el)return;
+  el.innerHTML='<div class="em">Loading…</div>';
+  try{
+    const r=await api({action:'getPendingQC'});
+    const grns=r.grns||[];
+    setBdg('b-qc',grns.length);
+    if(!grns.length){el.innerHTML='<div class="em">No items pending quality check</div>';return;}
+    S.qcItems=grns;
+    el.innerHTML=grns.map((g,i)=>`
+      <div class="pr-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div class="pr-num">${g.grnNum} · GRN ${g.grnDate}</div>
+            <div class="pr-desc">${g.itemDesc}</div>
+            <div class="pr-meta">PO: ${g.poNum} · ${g.rcvdQty} ${g.poQty?'of '+g.poQty:''} · ${g.vendorName}</div>
+          </div>
+          <span class="chip chip-y">QC Pending</span>
+        </div>
+        ${g.photoLink?`<div style="margin-top:8px;"><a href="${g.photoLink}" target="_blank" style="font-size:11px;color:#3B82F6;">📷 View GRN Photo</a></div>`:''}
+        <div class="btn-row" style="margin-top:10px;">
+          <button class="btn btn-sm" style="background:#15803D;color:#fff;flex:1;" onclick="doQCApprove('${g.grnNum}','${g.poNum}')">✓ Pass</button>
+          <button class="btn btn-sm" style="background:#DC2626;color:#fff;flex:1;" onclick="openQCReject('${g.grnNum}','${g.poNum}')">✗ Reject</button>
+        </div>
+      </div>`).join('');
+  }catch(e){el.innerHTML='<div class="em">Error. Tap refresh.</div>';}
+}
 
+async function doQCApprove(grnNum,poNum){
+  if(!confirm('Confirm: Material PASSED quality check?'))return;
+  toast('Recording QC pass…','ok');
+  try{
+    const r=await api({action:'recordQC',grnNum,poNum,decision:'PASS',qcBy:S.user&&S.user.name||'Quality'});
+    if(r.ok){toast('QC Passed — PO ready for invoice','ok');loadQC();}
+    else toast(r.error||'Failed','err');
+  }catch(e){toast('Error','err');}
+}
 
-// FINAL EXECUTION FIX
-(function(){
+function openQCReject(grnNum,poNum){
+  S.actQCGRN=grnNum;S.actQCPO=poNum;
+  document.getElementById('qc-reason').value='';
+  document.getElementById('qc-remarks').value='';
+  document.getElementById('qc-photo-preview').textContent='📷 Tap to capture / select photo';
+  S.qcPhotoData='';
+  document.getElementById('qcRejectSh').classList.add('on');
+}
 
-window.openSection = function(id){
+function previewQCPhoto(input){
+  if(!input.files||!input.files[0])return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    S.qcPhotoData=e.target.result;
+    document.getElementById('qc-photo-preview').innerHTML=`<img src="${e.target.result}" style="max-height:120px;border-radius:6px;">`;
+  };
+  reader.readAsDataURL(input.files[0]);
+}
 
-  // 🔥 STEP 1: derive tab key correctly
-  const key = id.replace('sec-','');
+async function submitQCReject(){
+  const reason=document.getElementById('qc-reason').value;
+  const remarks=document.getElementById('qc-remarks').value;
+  if(!reason){toast('Select a rejection reason','err');return;}
+  const fullReason=remarks?reason+' — '+remarks:reason;
+  toast('Sending rejection…','ok');
+  csh('qcRejectSh');
+  try{
+    const r=await api({action:'recordQC',grnNum:S.actQCGRN,poNum:S.actQCPO,
+      decision:'FAIL',reason:fullReason,qcBy:S.user&&S.user.name||'Quality',
+      qcPhotoData:S.qcPhotoData||''});
+    if(r.ok){toast('Rejection recorded. Vendor & Officer notified.','ok');loadQC();}
+    else toast(r.error||'Failed','err');
+  }catch(e){toast('Error','err');}
+}
 
-  // 🔥 STEP 2: find correct tab using dataset.tab
-  const tab = Array.from(document.querySelectorAll('.tab'))
-    .find(t => t.dataset && t.dataset.tab === key);
+async function loadQCHistory(){
+  const el=document.getElementById('qcHistoryList');
+  if(!el)return;
+  el.innerHTML='<div class="em">Loading…</div>';
+  try{
+    const r=await api({action:'getPendingQC'});
+    const grns=(r.grns||[]);
+    if(!grns.length){el.innerHTML='<div class="em">No QC records yet</div>';return;}
+    el.innerHTML=grns.map(g=>`
+      <div class="pr-card">
+        <div style="display:flex;justify-content:space-between;">
+          <div>
+            <div class="pr-num">${g.grnNum} · ${g.grnDate}</div>
+            <div class="pr-desc">${g.itemDesc}</div>
+            <div class="pr-meta">${g.vendorName} · ${g.rcvdQty} received</div>
+          </div>
+          <span class="chip ${g.status==='QC_PASSED'?'chip-g':g.status==='QC_FAILED'?'chip-r':'chip-y'}">${g.status==='QC_PASSED'?'Passed':g.status==='QC_FAILED'?'Failed':'Pending'}</span>
+        </div>
+      </div>`).join('');
+  }catch(e){el.innerHTML='<div class="em">Error loading history</div>';}
+}
 
-  // 🔥 STEP 3: trigger YOUR ORIGINAL SYSTEM
-  if(tab && typeof showTab === 'function'){
-    showTab(tab);   // ← THIS is the real engine
+// ── INVOICE FUNCTIONS ─────────────────────────────────────────
+async function loadPendingInvoices(){
+  const el=document.getElementById('invoiceList');
+  if(!el)return;
+  el.innerHTML='<div class="em">Loading…</div>';
+  try{
+    const r=await api({action:'getPendingInvoices'});
+    const pending=r.pending||[];
+    setBdg('b-inv',pending.length);
+    if(!pending.length){el.innerHTML='<div class="em">No invoices pending</div>';return;}
+    el.innerHTML=pending.map(p=>`
+      <div class="pr-card ${p.overdue?'urg':''}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+          <div>
+            <div class="pr-num">${p.poNum} · ${p.poDate}</div>
+            <div class="pr-desc">${p.itemDesc}</div>
+            <div class="pr-meta">${p.vendorName} · ₹${Number(p.totalAmt||0).toLocaleString('en-IN')}</div>
+          </div>
+          ${p.overdue?`<span class="chip chip-r">${p.daysSinceGRN}d overdue</span>`:'<span class="chip chip-p">QC Passed</span>'}
+        </div>
+        ${p.overdue?`<div style="font-size:11px;color:#DC2626;margin-bottom:8px;">⚠️ GRN done ${p.daysSinceGRN} days ago — invoice not received</div>`:''}
+        <button class="btn btn-b btn-sm" style="width:100%;" onclick="openInvoiceUpload('${p.poNum}','${(p.vendorName||'').replace(/'/g,'')}',${p.totalAmt||0})">Upload Invoice</button>
+      </div>`).join('');
+  }catch(e){el.innerHTML='<div class="em">Error. Tap refresh.</div>';}
+}
+
+function openInvoiceUpload(poNum,vendorName,poAmt){
+  S.actInvPO=poNum;S.actInvAmt=poAmt;
+  document.getElementById('inv-number').value='';
+  document.getElementById('inv-amount').value='';
+  document.getElementById('inv-photo-preview').textContent='📷 Tap to capture invoice photo';
+  document.getElementById('inv-match-warning').style.display='none';
+  S.invPhotoData='';
+  const info=document.getElementById('inv-po-info');
+  if(info)info.innerHTML=`<strong>${poNum}</strong> — ${vendorName}<br>PO Amount: <strong>₹${Number(poAmt).toLocaleString('en-IN')}</strong>`;
+  // Wire up amount change check
+  const invAmtEl=document.getElementById('inv-amount');
+  if(invAmtEl){
+    invAmtEl.oninput=function(){
+      const entered=parseFloat(this.value)||0;
+      const warn=document.getElementById('inv-match-warning');
+      if(!warn||!S.actInvAmt)return;
+      const diff=Math.abs(entered-S.actInvAmt)/S.actInvAmt*100;
+      if(diff>2){
+        warn.style.display='';
+        warn.textContent=`⚠️ Invoice ₹${entered.toLocaleString('en-IN')} differs from PO ₹${Number(S.actInvAmt).toLocaleString('en-IN')} by ${diff.toFixed(1)}%. Will be flagged.`;
+      }else{warn.style.display='none';}
+    };
   }
+  document.getElementById('invoiceSh').classList.add('on');
+}
 
-  // 🔥 STEP 4: fallback visibility (safety)
-  document.querySelectorAll('.sec').forEach(s => {
-    s.classList.remove('on');
-    s.style.display = 'none';
-  });
+function previewInvPhoto(input){
+  if(!input.files||!input.files[0])return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    S.invPhotoData=e.target.result;
+    document.getElementById('inv-photo-preview').innerHTML=`<img src="${e.target.result}" style="max-height:120px;border-radius:6px;">`;
+  };
+  reader.readAsDataURL(input.files[0]);
+}
 
-  const el = document.getElementById(id);
-  if(el){
-    el.classList.add('on');
-    el.style.display = 'block';
-  }
+async function submitInvoice(){
+  const invNum=document.getElementById('inv-number').value.trim();
+  const invAmt=document.getElementById('inv-amount').value;
+  if(!invNum){toast('Enter invoice number','err');return;}
+  if(!invAmt||parseFloat(invAmt)<=0){toast('Enter invoice amount','err');return;}
+  if(!S.invPhotoData){toast('Invoice photo is required','err');return;}
+  const btn=document.getElementById('invSubmitBtn');
+  if(btn){btn.disabled=true;btn.textContent='Uploading…';}
+  csh('invoiceSh');
+  try{
+    const r=await api({action:'uploadInvoice',poNum:S.actInvPO,
+      invoiceNumber:invNum,invoiceAmount:parseFloat(invAmt),
+      photoData:S.invPhotoData,uploadedBy:S.user&&S.user.name||'Officer'});
+    if(r.ok){toast('Invoice uploaded — PO closed','ok');loadPendingInvoices();}
+    else toast(r.error||'Failed','err');
+  }catch(e){toast('Error uploading invoice','err');}
+  finally{if(btn){btn.disabled=false;btn.textContent='Submit Invoice';}}
+}
 
-  // 🔥 STEP 5: UI
-  const hg = document.getElementById('homeGrid');
-  const back = document.getElementById('backHomeBtn');
+// ── MY GRNs ───────────────────────────────────────────────────
+async function loadMyGRNs(){
+  const el=document.getElementById('myGRNList');
+  if(!el)return;
+  el.innerHTML='<div class="em">Loading…</div>';
+  try{
+    const r=await api({action:'getPOsForGRN'});
+    const pos=(r.pos||[]).filter(p=>p.status==='GOODS_RECEIVED'||p.status==='QC_PASSED'||p.status==='QC_FAILED');
+    if(!pos.length){el.innerHTML='<div class="em">No GRN history yet</div>';return;}
+    const stC={'GOODS_RECEIVED':'chip-b','QC_PASSED':'chip-g','QC_FAILED':'chip-r'};
+    const stL={'GOODS_RECEIVED':'GRN Done','QC_PASSED':'QC Passed','QC_FAILED':'QC Failed'};
+    el.innerHTML=pos.map(p=>`
+      <div class="pr-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div class="pr-num">${p.poNum} · ${p.poDate}</div>
+            <div class="pr-desc">${p.itemDesc}</div>
+            <div class="pr-meta">${p.vendorName} · Rcvd: ${p.receivedQty||0} ${p.uom}</div>
+          </div>
+          <span class="chip ${stC[p.status]||'chip-gr'}">${stL[p.status]||p.status}</span>
+        </div>
+      </div>`).join('');
+  }catch(e){el.innerHTML='<div class="em">Error. Tap refresh.</div>';}
+}
 
-  if(hg) hg.style.display = 'none';
-  if(back) back.style.display = 'flex';
-};
 
-})();
-
-</script>
 
 <!-- PO PREVIEW SHEET -->
 <div class="sh-bg" id="poPreviewSh">
