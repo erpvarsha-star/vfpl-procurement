@@ -1041,20 +1041,71 @@ async function loadCompare(){
   el.innerHTML='<div class="em">Loading…</div>';
   try{
     const r=await api({action:'getComparisons'});
-    if(!r.ok||!r.comparisons.length){el.innerHTML='<div class="em">No comparisons ready</div>';setBdg('b-cmp',0);return;}
-    setBdg('b-cmp',r.comparisons.length);
-    el.innerHTML=r.comparisons.map(cmp=>{
-      // RAW MATERIAL with no quotes → show manual price entry instead
-      if(cmp.quotes.length===0&&(cmp.category||'').toUpperCase()==='RAW MATERIAL'){
-        return `<div style="margin-bottom:16px;">
+    // Handle both old format {comparisons:{}} and new format {comparisons:[]}
+    let cmps=[];
+    if(Array.isArray(r.comparisons)){
+      cmps=r.comparisons;
+    } else if(r.comparisons && typeof r.comparisons==='object'){
+      // Old format: convert grouped object to array
+      cmps=Object.entries(r.comparisons).map(([rfqNum,rows])=>{
+        // Each row is a Comparison sheet row object
+        const first=rows[0]||{};
+        const quotes=rows.filter(row=>{
+          const v=row['Vendor_Code']||row['VendorCode']||row['vendorCode']||'';
+          return String(v).trim()!=='';
+        }).map(row=>({
+          vendorCode: row['Vendor_Code']||row['VendorCode']||row['vendorCode']||'',
+          vendorName: row['Vendor_Name']||row['VendorName']||row['vendorName']||'',
+          vendorGstin: row['Vendor_GSTIN']||row['VendorGSTIN']||'',
+          rateExGST: parseFloat(row['Rate_ExGST']||row['RateExGST']||row['rateExGST']||0),
+          gstPct: parseFloat(row['GST_Pct']||row['GSTpct']||row['gstPct']||18),
+          deliveryDays: parseInt(row['Delivery_Days']||row['DeliveryDays']||row['deliveryDays']||7),
+          brand: row['Brand']||row['brand']||'',
+          lastPrice: row['Last_Price']||row['lastPrice']||'',
+          lastVendor: row['Last_Vendor']||row['lastVendor']||'',
+          rank: row['Rank']||row['rank']||'',
+          vsL1: row['Vs_L1']||row['vsL1']||'—',
+          aiSuggestion: row['AI_Suggestion']||row['aiSuggestion']||'',
+        }));
+        return {
+          rfqNum: rfqNum,
+          prNum: first['PR_Num']||first['PRNum']||first['prNum']||'',
+          itemCode: first['Item_Code']||first['ItemCode']||first['itemCode']||'',
+          itemDesc: first['Item_Desc']||first['ItemDesc']||first['itemDesc']||first['Item_Description']||'',
+          qty: first['Qty']||first['qty']||'',
+          uom: first['UOM']||first['uom']||'',
+          category: first['Category']||first['category']||'',
+          status: first['Status']||first['status']||'',
+          lastPrice: first['Last_Price']||first['lastPrice']||'',
+          lastVendor: first['Last_Vendor']||first['lastVendor']||'',
+          quotes: quotes,
+        };
+      });
+    }
+    if(!cmps.length){el.innerHTML='<div class="em">No comparisons ready</div>';setBdg('b-cmp',0);return;}
+    setBdg('b-cmp',cmps.length);
+    el.innerHTML=cmps.map(cmp=>{
+      const cat=(cmp.category||'').toUpperCase();
+      const status=(cmp.status||'').toUpperCase();
+      // STEEL / RAW MATERIAL with no quotes OR status=STEEL_PRICING → manual price entry
+      const isSteel=(cat==='RAW MATERIAL'||cat==='RM'||status==='STEEL_PRICING');
+      if(isSteel&&cmp.quotes.length===0){
+        const lastPriceBlock=cmp.lastPrice?
+          `<div style="margin-top:8px;padding:8px 10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:11px;">
+            <span style="color:#15803d;font-weight:600;">📊 Last purchased:</span>
+            <span style="font-weight:600;margin-left:4px;">₹${cmp.lastPrice}</span>
+            <span style="color:var(--muted);margin-left:4px;">from ${cmp.lastVendor||'—'}</span>
+          </div>`:'';
+        return `<div style="margin-bottom:16px;" id="cmp-${cmp.rfqNum.replace(/\//g,'_')}">
           <div class="cmp-hd">
             <div style="font-family:var(--mono);font-size:12px;font-weight:600;">${cmp.rfqNum}</div>
             <div style="font-size:13px;margin-top:2px;">${cmp.itemDesc||'—'} · ${cmp.qty||''} ${cmp.uom||''}</div>
-            ${cmp.lastPrice?`<div style="margin-top:8px;padding:8px 10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:11px;"><span style="color:#15803d;font-weight:600;">📊 Last purchased:</span> <span style="font-weight:600;">₹${cmp.lastPrice}</span> from ${cmp.lastVendor||'—'}</div>`:''}
+            <div style="margin-top:4px;"><span style="font-size:10px;background:#FEF3C7;color:#92400E;padding:2px 7px;border-radius:3px;font-weight:600;">⚡ STEEL / RAW MATERIAL — No vendor RFQ</span></div>
+            ${lastPriceBlock}
           </div>
           <div style="padding:14px;border:1.5px dashed #FED7AA;border-radius:var(--r);background:#FFF7ED;text-align:center;margin-top:8px;">
-            <div style="font-size:12px;color:#9A3412;font-weight:600;margin-bottom:8px;">No vendor quotes received</div>
-            <button class="btn" style="background:#EA580C;color:#fff;font-size:12px;" onclick="showManualPricePanel('${cmp.rfqNum}','${(cmp.itemDesc||'').replace(/'/g,"\\'")}','RAW MATERIAL')">Enter Agreed Price Manually →</button>
+            <div style="font-size:12px;color:#9A3412;font-weight:600;margin-bottom:8px;">Enter the price you agreed with the mill / trader</div>
+            <button class="btn" style="background:#EA580C;color:#fff;font-size:12px;" onclick="showManualPricePanel('${cmp.rfqNum}','${(cmp.itemDesc||'').replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${cmp.prNum}')">Enter Agreed Price →</button>
           </div>
         </div>`;
       }
@@ -1073,17 +1124,18 @@ async function loadCompare(){
         <div class="cmp-hd">
           <div style="font-family:var(--mono);font-size:12px;font-weight:600;">${cmp.rfqNum}</div>
           <div style="font-size:13px;margin-top:2px;">${cmp.itemDesc||'—'} · ${cmp.qty||''} ${cmp.uom||''}</div>
-          ${(cmp.quotes[0]?.lastPrice)?`<div style="margin-top:8px;padding:8px 10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:11px;"><span style="color:#15803d;font-weight:600;">📊 Last purchased:</span><span style="color:var(--ink);font-weight:600;margin-left:4px;">₹${cmp.quotes[0].lastPrice}</span><span style="color:var(--muted);margin-left:4px;">from ${cmp.quotes[0].lastVendor||'—'}</span><span style="display:block;margin-top:2px;color:var(--muted);">Current L1 ₹${cmp.quotes[0]?.rateExGST||'—'} — compare before selecting</span></div>`:''} 
+          ${cmp.lastPrice?`<div style="margin-top:8px;padding:8px 10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:11px;"><span style="color:#15803d;font-weight:600;">📊 Last purchased:</span><span style="font-weight:600;margin-left:4px;">₹${cmp.lastPrice}</span><span style="color:var(--muted);margin-left:4px;">from ${cmp.lastVendor||'—'}</span></div>`:''}
         </div>
         <div class="cmp-body">${rows}</div>
         ${ai?`<div class="ai-box"><div class="ai-lbl">AI SUGGESTION</div><div class="ai-text">${ai}</div></div>`:''}
         <div style="margin-top:8px;font-size:11px;color:var(--muted);padding:8px 12px;background:var(--paper);border:1px solid var(--border);border-radius:var(--r);" id="cmpst-${cmp.rfqNum.replace(/\//g,'_')}">Tap a row to select your recommendation</div>
         <div class="fg" style="margin-top:8px;"><label>Note if not selecting L1</label><textarea id="cnote-${cmp.rfqNum.replace(/\//g,'_')}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-family:inherit;font-size:13px;min-height:56px;" placeholder="Reason for non-L1 selection…"></textarea></div>
-        <button class="btn btn-b btn-sm" onclick="sendToYash('${cmp.rfqNum}','${cmp.itemDesc}')">Send to Yash →</button>
+        <button class="btn btn-b btn-sm" onclick="sendToYash('${cmp.rfqNum}','${cmp.itemDesc}','${cmp.prNum||''}')">Send to Yash →</button>
       </div>`;
     }).join('');
-  }catch(e){el.innerHTML='<div class="em">Error. Tap refresh.</div>';}
+  }catch(e){el.innerHTML='<div class="em">Error loading. Tap refresh.</div>';console.error(e);}
 }
+
 function selV(rfqNum,code,name,rate,rank,el){
   document.querySelectorAll('.cmp-row').forEach(r=>r.classList.remove('sel'));
   el.classList.add('sel');
@@ -2047,7 +2099,7 @@ async function submitNewItemToMaster(){
 }
 
 // ── RAW MATERIAL MANUAL PRICE (on Compare screen) ────────
-function showManualPricePanel(rfqNum,itemDesc,category){
+function showManualPricePanel(rfqNum,itemDesc,prNum){
   // Build and inject a manual price entry panel into the compare section
   const el=document.getElementById('compareContent');
   if(!el)return;
@@ -2123,7 +2175,7 @@ async function submitManualPrice(rfqNum){
     rfqNum, vendorCode, vendorName, vendorGstin,
     rateExGST:rate, gstPct:gst, deliveryDays:del,
     paymentTerms:pay, managerNote:note,
-    isManualEntry:true
+    isManualEntry:true, isSteelPricing:true
   });
   if(r.ok){
     toast('Price submitted — RFQ sent to Yash for approval','ok');
