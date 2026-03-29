@@ -1116,7 +1116,7 @@ async function loadRFQ(){
   }catch(e){el.innerHTML='<div class="em">Error. Tap refresh.</div>';}
 }
 
-// ── COMPARE ───────────────────────────────────────────────
+// ── QUOTE COMPARISON ───────────────────────────────────────────────
 let selVendor={};
 async function loadCompare(){
   const el=document.getElementById('compareList');
@@ -1403,7 +1403,7 @@ async function submitGRN(){
   }catch(e){toast('Connection error','err');}
 }
 
-// ── ALL POs ───────────────────────────────────────────────
+// ── PO STATUS ───────────────────────────────────────────────
 async function loadPOs(){
   const el=document.getElementById('posList');
   el.innerHTML='<div class="em">Loading…</div>';
@@ -2016,7 +2016,41 @@ const SECTION_MAP = {
   invoice: 'sec-invoice',
   mygrns: 'sec-mygrns'
 };
+window.openSection = function(id){
 
+  // 🔥 STEP 1: find original tab
+  const tab = [...document.querySelectorAll('.tab')]
+    .find(t => t.dataset.sec === id);
+
+  // 🔥 STEP 2: trigger original system FIRST
+  if(tab){
+    if(typeof tab.onclick === 'function'){
+      tab.onclick();   // direct call (most reliable)
+    } else {
+      tab.dispatchEvent(new Event('click', { bubbles: true }));
+    }
+  }
+
+  // 🔥 STEP 3: now control visibility
+  document.querySelectorAll('.sec').forEach(s => {
+    s.classList.remove('on');
+    s.style.display = 'none';
+  });
+
+  const el = document.getElementById(id);
+  if(el){
+    el.classList.add('on');
+    el.style.display = 'block';
+  }
+
+  // 🔥 STEP 4: UI controls
+  const hg = document.getElementById('homeGrid');
+  const back = document.getElementById('backHomeBtn');
+
+  if(hg) hg.style.display = 'none';
+  if(back) back.style.display = 'flex';
+};
+  
 function getRole(){
   return window.USER_ROLE || 'RAISER';
 }
