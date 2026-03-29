@@ -2022,15 +2022,28 @@ function getRole(){
 }
 
 window.openSection = function(id){
-  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+
+  document.querySelectorAll('.sec').forEach(s => {
+    s.classList.remove('on');
+    s.style.display = 'none';
+  });
+
   const el = document.getElementById(id);
-  if(el) el.classList.add('on');
+  if(el){
+    el.classList.add('on');
+    el.style.display = 'block';
+  }
 
   const hg = document.getElementById('homeGrid');
   const back = document.getElementById('backHomeBtn');
 
   if(hg) hg.style.display = 'none';
   if(back) back.style.display = 'flex';
+
+  if(typeof window.onSectionOpen === 'function'){
+    window.onSectionOpen(id);
+  }
+
 };
 
 window.goHome = function(){
