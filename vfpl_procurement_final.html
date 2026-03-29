@@ -413,6 +413,73 @@ html,body{height:100%;background:var(--paper);font-family:var(--sans);color:var(
   <div id="myGRNList"><div class="em">Loading…</div></div>
 </div>
 
+<!-- NEW ITEM REQUESTS -->
+<div class="sec" id="sec-newitem">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <div style="font-size:13px;font-weight:600;">New Item Requests</div>
+    <button class="btn btn-s btn-sm" onclick="loadNewItemRequests()">↻ Refresh</button>
+  </div>
+  <div id="newItemList"><div class="em">Loading…</div></div>
+</div>
+
+<!-- NEW ITEM MASTER ENTRY SHEET -->
+<div class="sh-bg" id="newItemSh">
+  <div class="sh">
+    <div class="sh-drag"></div>
+    <div class="sh-title">Add to Item Master</div>
+    <div id="newItemReqInfo" style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:var(--r);padding:10px 12px;margin-bottom:14px;font-size:12px;"></div>
+    <div class="fg"><label>Part Code * <span style="font-size:9px;color:var(--muted);">(assign a unique code)</span></label>
+      <input type="text" id="ni-code" placeholder="e.g. CNAB0099" style="font-family:var(--mono);text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+      <div id="ni-code-err" style="color:var(--accent);font-size:11px;margin-top:3px;display:none;"></div>
+    </div>
+    <div class="fg"><label>Category *</label>
+      <select id="ni-cat">
+        <option value="">Select category</option>
+        <option>ABRASIVES</option><option>BEARINGS & SEALS</option><option>CUTTING TOOLS</option>
+        <option>DIES</option><option>ELECTRICAL</option><option>FASTENERS</option>
+        <option>FIXTURES & CHUCK JAWS</option><option>FURNACE OIL & GASES</option>
+        <option>GAUGES & INSTRUMENTS</option><option>HOUSEKEEPING</option><option>LUBRICANTS</option>
+        <option>MACHINE SPARES</option><option>MISCELLANEOUS</option><option>PACKAGING MATERIAL</option>
+        <option>PAINTS & COATINGS</option><option>SAFETY</option><option>STATIONERY & PRINTING</option>
+        <option>STEEL SHOTS</option><option>TOOL HOLDERS & V BELTS</option><option>WELDING</option>
+        <option>PLANT & MACHINERY</option><option>FIXTURES (CAPITAL)</option>
+        <option>AMC</option><option>CALIBRATION</option><option>COMPUTER & IT</option>
+        <option>CONSULTANCY</option><option>HEAT TREATMENT</option><option>INSURANCE</option>
+        <option>MAINTENANCE & REPAIR</option><option>MEDICAL</option><option>MOTOR REWINDING</option>
+        <option>RESHARPENING & COATING</option><option>TESTING</option><option>TRANSPORTATION</option>
+        <option>VEHICLE REPAIR</option><option>RAW MATERIAL</option>
+      </select>
+    </div>
+    <div class="fg"><label>Sub Category</label><input type="text" id="ni-subcat" placeholder="e.g. Ball Bearings, Drill Bits…"></div>
+    <div class="g2">
+      <div class="fg"><label>UOM *</label>
+        <select id="ni-uom">
+          <option>NOS</option><option>KG</option><option>MTR</option><option>LTR</option>
+          <option>SET</option><option>BOX</option><option>PCS</option><option>ROLL</option>
+          <option>PAIR</option><option>JOB</option>
+        </select>
+      </div>
+      <div class="fg"><label>Tax %</label>
+        <select id="ni-tax">
+          <option value="0">0%</option><option value="5">5%</option>
+          <option value="12">12%</option><option value="18" selected>18%</option>
+          <option value="28">28%</option>
+        </select>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="fg"><label>MOQ</label><input type="number" id="ni-moq" placeholder="1" value="1" inputmode="numeric"></div>
+      <div class="fg"><label>Latest Rate (₹)</label><input type="number" id="ni-rate" placeholder="0" value="0" inputmode="decimal"></div>
+    </div>
+    <div class="fg"><label>Item Description *</label><input type="text" id="ni-desc" placeholder="Full description as it will appear in system"></div>
+    <div id="ni-err" style="color:var(--accent);font-size:12px;margin-bottom:8px;display:none;"></div>
+    <div class="btn-row">
+      <button class="btn btn-s" onclick="csh('newItemSh')">Cancel</button>
+      <button class="btn btn-g" style="flex:2;" onclick="submitNewItemToMaster()">Add to Item Master →</button>
+    </div>
+  </div>
+</div>
+
 
 <!-- RFQ TERMS SHEET -->
 <div class="sh-bg" id="rfqTermsSh">
@@ -618,7 +685,7 @@ const LOGO='data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJT
 const ROLE_TABS={
   RAISER:[{id:'raise',lb:'New PR'},{id:'myprs',lb:'My PRs'},{id:'dashboard',lb:'Dashboard'}],
   PR_RAISER:[{id:'raise',lb:'New PR'},{id:'myprs',lb:'My PRs'},{id:'dashboard',lb:'Dashboard'}],
-  PURCHASE_OFFICER:[{id:'review',lb:'Review PRs',bd:'b-rev'},{id:'rfq',lb:'RFQ Status',bd:'b-rfq'},{id:'compare',lb:'Compare',bd:'b-cmp'},{id:'grn',lb:'GRN Entry',bd:'b-grn'},{id:'invoice',lb:'Invoices',bd:'b-inv'},{id:'pos',lb:'All POs'},{id:'dashboard',lb:'Dashboard'}],
+  PURCHASE_OFFICER:[{id:'raise',lb:'New PR'},{id:'myprs',lb:'My PRs'},{id:'review',lb:'Review PRs',bd:'b-rev'},{id:'rfq',lb:'RFQ Status',bd:'b-rfq'},{id:'grn',lb:'GRN Entry',bd:'b-grn'},{id:'invoice',lb:'Invoices',bd:'b-inv'},{id:'newitem',lb:'New Items',bd:'b-ni'},{id:'pos',lb:'All POs'},{id:'dashboard',lb:'Dashboard'}],
   PURCHASE_MANAGER:[{id:'compare',lb:'Compare',bd:'b-cmp'},{id:'rfq',lb:'RFQ Status'},{id:'pos',lb:'All POs'},{id:'dashboard',lb:'Dashboard'}],
   PO_APPROVER:[{id:'approve',lb:'Approve',bd:'b-app'},{id:'compare',lb:'Compare'},{id:'review',lb:'Review PRs'},{id:'rfq',lb:'RFQ Status'},{id:'grn',lb:'GRN Entry'},{id:'invoice',lb:'Invoices',bd:'b-inv'},{id:'pos',lb:'All POs'},{id:'dashboard',lb:'Dashboard'}],
   GRN_GATE:[{id:'grn',lb:'GRN Entry',bd:'b-grn'},{id:'invoice',lb:'Invoices',bd:'b-inv'},{id:'mygrns',lb:'My GRNs'},{id:'dashboard',lb:'Dashboard'}],
@@ -701,7 +768,7 @@ function showTab(el){
   el.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
   const id=el.dataset.tab;
   document.getElementById('sec-'+id)?.classList.add('on');
-  const map={review:loadReview,rfq:loadRFQ,compare:loadCompare,approve:loadApprove,grn:loadGRN,pos:loadPOs,dashboard:loadDashboard,myprs:loadMyPRs,qc:loadQC,qchistory:loadQCHistory,invoice:loadPendingInvoices,mygrns:loadMyGRNs};
+  const map={review:loadReview,rfq:loadRFQ,compare:loadCompare,approve:loadApprove,grn:loadGRN,pos:loadPOs,dashboard:loadDashboard,myprs:loadMyPRs,qc:loadQC,qchistory:loadQCHistory,invoice:loadPendingInvoices,mygrns:loadMyGRNs,newitem:loadNewItemRequests};
   if(map[id])map[id]();
 }
 function showTabById(id){
@@ -977,6 +1044,20 @@ async function loadCompare(){
     if(!r.ok||!r.comparisons.length){el.innerHTML='<div class="em">No comparisons ready</div>';setBdg('b-cmp',0);return;}
     setBdg('b-cmp',r.comparisons.length);
     el.innerHTML=r.comparisons.map(cmp=>{
+      // RAW MATERIAL with no quotes → show manual price entry instead
+      if(cmp.quotes.length===0&&(cmp.category||'').toUpperCase()==='RAW MATERIAL'){
+        return `<div style="margin-bottom:16px;">
+          <div class="cmp-hd">
+            <div style="font-family:var(--mono);font-size:12px;font-weight:600;">${cmp.rfqNum}</div>
+            <div style="font-size:13px;margin-top:2px;">${cmp.itemDesc||'—'} · ${cmp.qty||''} ${cmp.uom||''}</div>
+            ${cmp.lastPrice?`<div style="margin-top:8px;padding:8px 10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:11px;"><span style="color:#15803d;font-weight:600;">📊 Last purchased:</span> <span style="font-weight:600;">₹${cmp.lastPrice}</span> from ${cmp.lastVendor||'—'}</div>`:''}
+          </div>
+          <div style="padding:14px;border:1.5px dashed #FED7AA;border-radius:var(--r);background:#FFF7ED;text-align:center;margin-top:8px;">
+            <div style="font-size:12px;color:#9A3412;font-weight:600;margin-bottom:8px;">No vendor quotes received</div>
+            <button class="btn" style="background:#EA580C;color:#fff;font-size:12px;" onclick="showManualPricePanel('${cmp.rfqNum}','${(cmp.itemDesc||'').replace(/'/g,"\\'")}','RAW MATERIAL')">Enter Agreed Price Manually →</button>
+          </div>
+        </div>`;
+      }
       const rc=['r1','r2','r3'];const lc=['l1','l2','l3'];
       const ai=(cmp.quotes.find(q=>q.aiSuggestion)||{}).aiSuggestion||'';
       const rows=cmp.quotes.map((q,i)=>`
@@ -1077,85 +1158,114 @@ async function approveYash(idx){
   showPOPreview(appr,sel);
 }
 function showPOPreview(appr,sel){
-  const taxable=(parseFloat(sel.rateExGST)||0)*(parseFloat(appr.qty)||1);
-  const gstPct=parseFloat(sel.gstPct)||18;
-  const isIGST=(sel.vendorGstin||'').substring(0,2)!=='27';
-  const gstAmt=taxable*gstPct/100;
-  const cgst=isIGST?0:gstAmt/2;
-  const sgst=isIGST?0:gstAmt/2;
-  const igst=isIGST?gstAmt:0;
-  const net=taxable+gstAmt;
-  const today=new Date();
-  const fmtDate=d=>`${d.getDate().toString().padStart(2,'0')}-${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]}-${d.getFullYear()}`;
-  document.getElementById('poPreviewBd').innerHTML=`
-    <div style="font-family:Arial,sans-serif;font-size:11px;border:1px solid #ccc;margin-top:8px;">
-      <div style="background:#1a1a1a;color:#fff;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <div style="font-size:13px;font-weight:700;letter-spacing:.04em;">VARSHA FORGINGS PRIVATE LIMITED</div>
-          <div style="font-size:10px;opacity:.8;margin-top:2px;">B-7, MIDC Indl. Area, Waluj, Aurangabad - 431136</div>
-          <div style="font-size:10px;opacity:.8;">GSTIN: 27AAACV9485B1Z4</div>
+  // Store for doConfirmPO
+  S._previewRate=parseFloat(sel.rateExGST)||0;
+  S._previewGST=parseFloat(sel.gstPct)||18;
+  function calcAndRender(rateEx){
+    const qty=parseFloat(appr.qty)||1;
+    const gstPct=S._previewGST;
+    const taxable=rateEx*qty;
+    const isIGST=(sel.vendorGstin||'').substring(0,2)!=='27';
+    const gstAmt=taxable*gstPct/100;
+    const cgst=isIGST?0:gstAmt/2;
+    const sgst=isIGST?0:gstAmt/2;
+    const igst=isIGST?gstAmt:0;
+    const net=taxable+gstAmt;
+    const today=new Date();
+    const fmtDate=d=>`${d.getDate().toString().padStart(2,'0')}-${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]}-${d.getFullYear()}`;
+    document.getElementById('poPreviewBd').innerHTML=`
+      <div style="background:#FFF3CD;border:1px solid #FFC107;border-radius:var(--r);padding:10px 12px;margin-bottom:10px;">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#856404;margin-bottom:6px;">Negotiated Rate Override</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:13px;color:#856404;">₹</span>
+          <input type="number" id="po-rate-override" value="${rateEx}" step="0.01" inputmode="decimal"
+            style="width:120px;padding:6px 10px;border:1.5px solid #FFC107;border-radius:var(--r);font-family:var(--mono);font-size:14px;font-weight:600;"
+            oninput="refreshPOPreview(this.value)">
+          <span style="font-size:11px;color:#856404;">ex-GST per ${appr.uom||'NOS'} &nbsp;·&nbsp; GST ${gstPct}%</span>
         </div>
-        <div style="text-align:right;font-size:10px;opacity:.7;">
-          <div>PAN: AAACV9485B</div>
-          <div>CIN: U27310PN1993PTC072671</div>
+        <div style="font-size:10px;color:#856404;margin-top:4px;">Pre-filled from comparison. Edit if you negotiated a different rate.</div>
+      </div>
+      <div style="font-family:Arial,sans-serif;font-size:11px;border:1px solid #ccc;">
+        <div style="background:#1a1a1a;color:#fff;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:13px;font-weight:700;letter-spacing:.04em;">VARSHA FORGINGS PRIVATE LIMITED</div>
+            <div style="font-size:10px;opacity:.8;margin-top:2px;">B-7, MIDC Indl. Area, Waluj, Aurangabad - 431136</div>
+            <div style="font-size:10px;opacity:.8;">GSTIN: 27AAACV9485B1Z4</div>
+          </div>
+          <div style="text-align:right;font-size:10px;opacity:.7;">
+            <div>PAN: AAACV9485B</div><div>CIN: U27310PN1993PTC072671</div>
+          </div>
         </div>
-      </div>
-      <div style="background:#FF6600;color:#fff;text-align:center;padding:7px;font-size:15px;font-weight:700;letter-spacing:.1em;">PURCHASE ORDER</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #ddd;">
-        <div style="padding:8px 10px;border-right:1px solid #ddd;">
-          <div style="color:#888;font-size:9px;text-transform:uppercase;margin-bottom:3px;">To (Vendor)</div>
-          <div style="font-weight:700;font-size:12px;">${sel.vendorName||'—'}</div>
-          <div style="color:#555;margin-top:2px;">GSTIN: ${sel.vendorGstin||'—'}</div>
+        <div style="background:#FF6600;color:#fff;text-align:center;padding:7px;font-size:15px;font-weight:700;letter-spacing:.1em;">PURCHASE ORDER</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #ddd;">
+          <div style="padding:8px 10px;border-right:1px solid #ddd;">
+            <div style="color:#888;font-size:9px;text-transform:uppercase;margin-bottom:3px;">To (Vendor)</div>
+            <div style="font-weight:700;font-size:12px;">${sel.vendorName||'—'}</div>
+            <div style="color:#555;margin-top:2px;">GSTIN: ${sel.vendorGstin||'—'}</div>
+          </div>
+          <div style="padding:8px 10px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="color:#888;">PO Date</span><span style="font-weight:600;">${fmtDate(today)}</span></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="color:#888;">RFQ Ref</span><span style="font-family:monospace;font-size:10px;">${appr.rfqNum}</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:#888;">Delivery By</span><span style="font-weight:600;">${fmtDate(new Date(today.getTime()+parseInt(sel.deliveryDays||7)*86400000))}</span></div>
+          </div>
         </div>
-        <div style="padding:8px 10px;">
-          <div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="color:#888;">PO Date</span><span style="font-weight:600;">${fmtDate(today)}</span></div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="color:#888;">RFQ Ref</span><span style="font-family:monospace;font-size:10px;">${appr.rfqNum}</span></div>
-          <div style="display:flex;justify-content:space-between;"><span style="color:#888;">Delivery By</span><span style="font-weight:600;">${fmtDate(new Date(today.getTime()+parseInt(sel.deliveryDays||7)*86400000))}</span></div>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr style="background:#f5f5f5;">
+            <th style="padding:6px 8px;text-align:left;font-size:10px;border-bottom:1px solid #ddd;">#</th>
+            <th style="padding:6px 8px;text-align:left;font-size:10px;border-bottom:1px solid #ddd;">Item</th>
+            <th style="padding:6px 8px;text-align:center;font-size:10px;border-bottom:1px solid #ddd;">Qty</th>
+            <th style="padding:6px 8px;text-align:right;font-size:10px;border-bottom:1px solid #ddd;">Rate</th>
+            <th style="padding:6px 8px;text-align:right;font-size:10px;border-bottom:1px solid #ddd;">Total</th>
+          </tr>
+          <tr>
+            <td style="padding:8px;border-bottom:1px solid #eee;">1</td>
+            <td style="padding:8px;border-bottom:1px solid #eee;">
+              <div style="font-weight:600;">${appr.itemDesc||'—'}</div>
+              <div style="color:#888;font-size:10px;">${appr.itemCode||''} ${sel.brand?'· '+sel.brand:''}</div>
+            </td>
+            <td style="padding:8px;text-align:center;border-bottom:1px solid #eee;">${appr.qty} ${appr.uom||'NOS'}</td>
+            <td style="padding:8px;text-align:right;border-bottom:1px solid #eee;font-family:monospace;">₹${rateEx.toLocaleString('en-IN',{minimumFractionDigits:2})}</td>
+            <td style="padding:8px;text-align:right;border-bottom:1px solid #eee;font-family:monospace;">₹${taxable.toLocaleString('en-IN',{minimumFractionDigits:2})}</td>
+          </tr>
+        </table>
+        <div style="display:flex;justify-content:flex-end;">
+          <div style="width:220px;border-left:1px solid #ddd;border-top:1px solid #ddd;">
+            <div style="display:flex;justify-content:space-between;padding:5px 10px;border-bottom:1px solid #eee;"><span>Taxable</span><span style="font-family:monospace;">₹${taxable.toLocaleString('en-IN',{minimumFractionDigits:2})}</span></div>
+            ${isIGST
+              ?`<div style="display:flex;justify-content:space-between;padding:5px 10px;border-bottom:1px solid #eee;"><span>IGST @${gstPct}%</span><span style="font-family:monospace;">₹${igst.toLocaleString('en-IN',{minimumFractionDigits:2})}</span></div>`
+              :`<div style="display:flex;justify-content:space-between;padding:5px 10px;border-bottom:1px solid #eee;"><span>CGST @${gstPct/2}%</span><span style="font-family:monospace;">₹${cgst.toLocaleString('en-IN',{minimumFractionDigits:2})}</span></div>
+               <div style="display:flex;justify-content:space-between;padding:5px 10px;border-bottom:1px solid #eee;"><span>SGST @${gstPct/2}%</span><span style="font-family:monospace;">₹${sgst.toLocaleString('en-IN',{minimumFractionDigits:2})}</span></div>`}
+            <div style="display:flex;justify-content:space-between;padding:7px 10px;font-weight:700;background:#f9f9f9;"><span>Net Amount</span><span style="font-family:monospace;">₹${net.toLocaleString('en-IN',{minimumFractionDigits:2})}</span></div>
+          </div>
         </div>
-      </div>
-      <table style="width:100%;border-collapse:collapse;">
-        <tr style="background:#f5f5f5;">
-          <th style="padding:6px 8px;text-align:left;font-size:10px;border-bottom:1px solid #ddd;">#</th>
-          <th style="padding:6px 8px;text-align:left;font-size:10px;border-bottom:1px solid #ddd;">Item</th>
-          <th style="padding:6px 8px;text-align:center;font-size:10px;border-bottom:1px solid #ddd;">Qty</th>
-          <th style="padding:6px 8px;text-align:right;font-size:10px;border-bottom:1px solid #ddd;">Rate</th>
-          <th style="padding:6px 8px;text-align:right;font-size:10px;border-bottom:1px solid #ddd;">Total</th>
-        </tr>
-        <tr>
-          <td style="padding:8px;border-bottom:1px solid #eee;">1</td>
-          <td style="padding:8px;border-bottom:1px solid #eee;">
-            <div style="font-weight:600;">${appr.itemDesc||'—'}</div>
-            <div style="color:#888;font-size:10px;">${appr.itemCode||''} ${sel.brand?'· '+sel.brand:''}</div>
-          </td>
-          <td style="padding:8px;text-align:center;border-bottom:1px solid #eee;">${appr.qty} ${appr.uom||'NOS'}</td>
-          <td style="padding:8px;text-align:right;border-bottom:1px solid #eee;font-family:monospace;">₹${parseFloat(sel.rateExGST).toLocaleString('en-IN',{minimumFractionDigits:2})}</td>
-          <td style="padding:8px;text-align:right;border-bottom:1px solid #eee;font-family:monospace;">₹${taxable.toLocaleString('en-IN',{minimumFractionDigits:2})}</td>
-        </tr>
-      </table>
-      <div style="display:flex;justify-content:flex-end;">
-        <div style="width:220px;border-left:1px solid #ddd;border-top:1px solid #ddd;">
-          <div style="display:flex;justify-content:space-between;padding:5px 10px;border-bottom:1px solid #eee;"><span>Taxable</span><span style="font-family:monospace;">₹${taxable.toLocaleString('en-IN',{minimumFractionDigits:2})}</span></div>
-          ${isIGST?`<div style="display:flex;justify-content:space-between;padding:5px 10px;border-bottom:1px solid #eee;"><span>IGST @${gstPct}%</span><span style="font-family:monospace;">₹${igst.toLocaleString('en-IN',{minimumFractionDigits:2})}</span></div>`:`<div style="display:flex;justify-content:space-between;padding:5px 10px;border-bottom:1px solid #eee;"><span>CGST @${gstPct/2}%</span><span style="font-family:monospace;">₹${cgst.toLocaleString('en-IN',{minimumFractionDigits:2})}</span></div><div style="display:flex;justify-content:space-between;padding:5px 10px;border-bottom:1px solid #eee;"><span>SGST @${gstPct/2}%</span><span style="font-family:monospace;">₹${sgst.toLocaleString('en-IN',{minimumFractionDigits:2})}</span></div>`}
-          <div style="display:flex;justify-content:space-between;padding:7px 10px;font-weight:700;background:#f9f9f9;"><span>Net Amount</span><span style="font-family:monospace;">₹${net.toLocaleString('en-IN',{minimumFractionDigits:2})}</span></div>
+        <div style="padding:8px 10px;background:#f9f9f9;border-top:1px solid #ddd;font-size:10px;color:#555;display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <div><span style="color:#888;">Payment:</span> 60 Days from GRN</div>
+          <div><span style="color:#888;">Freight:</span> Included in Rate</div>
+          <div><span style="color:#888;">Validity:</span> ${sel.deliveryDays||7} days</div>
+          <div><span style="color:#888;">State:</span> Maharashtra</div>
         </div>
-      </div>
-      <div style="padding:8px 10px;background:#f9f9f9;border-top:1px solid #ddd;font-size:10px;color:#555;display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-        <div><span style="color:#888;">Payment:</span> 60 Days from GRN</div>
-        <div><span style="color:#888;">Freight:</span> Included in Rate</div>
-        <div><span style="color:#888;">Validity:</span> ${sel.deliveryDays||7} days</div>
-        <div><span style="color:#888;">State:</span> Maharashtra</div>
-      </div>
-      <div style="padding:6px 10px;font-size:9px;color:#888;border-top:1px solid #ddd;background:#fafafa;">
-        Mention PO No. on Invoice, DC & Packing Slip. GST compliance failure may be recovered from vendor per CGST Act S.171.
-      </div>
-    </div>`;
+        <div style="padding:6px 10px;font-size:9px;color:#888;border-top:1px solid #ddd;background:#fafafa;">
+          Mention PO No. on Invoice, DC & Packing Slip. GST compliance failure may be recovered from vendor per CGST Act S.171.
+        </div>
+      </div>`;
+  }
+  // Expose refresh for the rate input
+  window.refreshPOPreview=function(val){
+    const r=parseFloat(val)||0;
+    S._previewRate=r;
+    calcAndRender(r);
+    // Restore input value after re-render
+    const inp=document.getElementById('po-rate-override');
+    if(inp){inp.value=val;}
+  };
+  calcAndRender(S._previewRate);
   document.getElementById('poPreviewSh').classList.add('on');
 }
-// already async
 async function doConfirmPO(){
   if(!pendingApproval){toast('No pending approval','err');return;}
   const {appr,sel}=pendingApproval;
-  // Determine PO type from category (matches _Config keys: RM, CON, AST, JWK, SER)
+  // Use overridden rate if Yash changed it
+  const finalRate=parseFloat(document.getElementById('po-rate-override')?.value)||S._previewRate||parseFloat(sel.rateExGST)||0;
   const _cat=(appr.category||'').toUpperCase();
   const poType=_cat==='RAW MATERIAL'?'RM':
     ['PLANT & MACHINERY','FIXTURES (CAPITAL)','ELECTRICAL ASSETS'].includes(_cat)?'AST':
@@ -1166,13 +1276,13 @@ async function doConfirmPO(){
   const specialInst=document.getElementById('po-special-inst')?.value||'';
   const r=await api({action:'approvePO',rfqNum:appr.rfqNum,prNum:appr.prNum,
     vendorCode:sel.vendorCode,itemCode:appr.itemCode,itemDesc:appr.itemDesc,
-    qty:appr.qty,uom:appr.uom,brand:sel.brand||'',rateExGST:sel.rateExGST,
+    qty:appr.qty,uom:appr.uom,brand:sel.brand||'',rateExGST:finalRate,
     gstPct:sel.gstPct,deliveryDays:sel.deliveryDays,poType,plant:'VFPL Aurangabad',
     specialInstructions:specialInst});
   document.getElementById('poConfirmBtn').textContent='✓ Confirm & Release PO';
   document.getElementById('poConfirmBtn').disabled=false;
   if(r.ok){
-    csh('poPreviewSh');csh('approveSh');
+    csh('poPreviewSh');
     toast('PO Released: '+r.poNum+' · '+r.vendor,'ok');
     pendingApproval=null;
     loadApprove();
@@ -1399,24 +1509,65 @@ async function loadMyPRs(){
     const myName=S.user&&S.user.name?S.user.name:'';
     const myPRs=(r.prs||[]).filter(p=>!myName||p.raisedBy===myName);
     if(!myPRs.length){el.innerHTML='<div class="em">No PRs raised yet</div>';return;}
-    const sc={PENDING_REVIEW:'chip-b',RFQ_SENT:'chip-y',QUOTES_RECEIVED:'chip-y',
-      PENDING_APPROVAL:'chip-p',PO_ISSUED:'chip-g',COMPLETED:'chip-g',
-      REJECTED:'chip-r',ON_HOLD:'chip-o',CLOSED:'chip-gr'};
-    const sl={PENDING_REVIEW:'Pending Review',RFQ_SENT:'RFQ Sent',QUOTES_RECEIVED:'Quotes In',
-      PENDING_APPROVAL:'With Yash',PO_ISSUED:'PO Released',COMPLETED:'Delivered',
-      REJECTED:'Rejected',ON_HOLD:'On Hold',CLOSED:'Closed'};
-    el.innerHTML=myPRs.map(pr=>`
-      <div class="pr-card ${pr.urgency==='RED'?'urg':pr.urgency==='ORANGE'?'med':''}">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+    // Journey stages
+    const STAGES=[
+      {key:'raised',    lb:'Raised'},
+      {key:'rfq',       lb:'RFQ Sent'},
+      {key:'quotes',    lb:'Quotes In'},
+      {key:'approved',  lb:'Approved'},
+      {key:'po',        lb:'PO Released'},
+      {key:'grn',       lb:'GRN Done'},
+    ];
+    function getStage(status){
+      const m={
+        PENDING_REVIEW:0, ON_HOLD:0, REJECTED:-1,
+        RFQ_SENT:1, QUOTES_RECEIVED:2,
+        PENDING_APPROVAL:2,
+        PO_ISSUED:4, GOODS_RECEIVED:5, QC_PASSED:5, QC_FAILED:5,
+        INVOICE_RECEIVED:5, CLOSED:5, COMPLETED:5,
+      };
+      // Manager selection = stage 3 (approved by manager, pending Yash)
+      if(status==='PENDING_APPROVAL')return 3;
+      return m[status]!==undefined?m[status]:0;
+    }
+    el.innerHTML=myPRs.map(pr=>{
+      const rejected=pr.status==='REJECTED'||pr.status==='ON_HOLD';
+      const stage=rejected?-1:getStage(pr.status);
+      const urgColor=pr.urgency==='RED'?'#dc2626':pr.urgency==='ORANGE'?'#ea580c':'#ca8a04';
+      const stageBar=rejected?
+        `<div style="margin-top:10px;padding:7px 10px;background:#fee2e2;border-radius:5px;border:1px solid #fca5a5;font-size:11px;color:#991b1b;font-weight:600;">
+          ${pr.status==='REJECTED'?'✕ Rejected':'⏸ On Hold'}${pr.remarks?' — '+pr.remarks:''}
+        </div>`:
+        `<div style="margin-top:10px;position:relative;">
+          <div style="display:flex;align-items:center;gap:0;">
+            ${STAGES.map((s,i)=>{
+              const done=i<=stage;
+              const active=i===stage;
+              const isLast=i===STAGES.length-1;
+              return `<div style="display:flex;align-items:center;flex:1;">
+                <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+                  <div style="width:18px;height:18px;border-radius:50%;background:${done?'var(--green)':'var(--border)'};border:2px solid ${active?'var(--green)':'transparent'};display:flex;align-items:center;justify-content:center;transition:all .2s;">
+                    ${done?'<svg width="8" height="8" viewBox="0 0 10 10"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>':''}
+                  </div>
+                  <div style="font-size:8px;color:${done?'var(--green)':'var(--muted)'};font-weight:${active?'700':'400'};margin-top:3px;white-space:nowrap;text-align:center;">${s.lb}</div>
+                </div>
+                ${!isLast?`<div style="flex:1;height:2px;background:${i<stage?'var(--green)':'var(--border)'};margin:0 2px;margin-bottom:14px;"></div>`:''}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+      return `<div class="pr-card ${pr.urgency==='RED'?'urg':pr.urgency==='ORANGE'?'med':''}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px;">
           <div>
             <div class="pr-num">${pr.prNum} · ${pr.date}</div>
             <div class="pr-desc">${pr.itemDesc||pr.itemCode}</div>
             <div class="pr-meta">${pr.qty} ${pr.uom} · ${pr.dept} · Req: ${pr.reqBy}</div>
           </div>
-          <span class="chip ${sc[pr.status]||'chip-gr'}">${sl[pr.status]||pr.status}</span>
+          <span style="font-size:9px;font-weight:700;color:${urgColor};background:${pr.urgency==='RED'?'#fee2e2':pr.urgency==='ORANGE'?'#ffedd5':'#fefce8'};padding:2px 7px;border-radius:3px;white-space:nowrap;">${pr.urgency}</span>
         </div>
-        ${pr.remarks?`<div style="font-size:11px;color:var(--muted);margin-top:4px;">${pr.remarks}</div>`:''}
-      </div>`).join('');
+        ${stageBar}
+      </div>`;
+    }).join('');
   }catch(e){el.innerHTML='<div class="em">Error. Tap refresh.</div>';}
 }
 
@@ -1448,7 +1599,8 @@ function openSection(id){
   // Trigger loader
   const loaders={review:loadReview,rfq:loadRFQ,compare:loadCompare,approve:loadApprove,
     grn:loadGRN,pos:loadPOs,dashboard:loadDashboard,myprs:loadMyPRs,
-    qc:loadQC,qchistory:loadQCHistory,invoice:loadPendingInvoices,mygrns:loadMyGRNs};
+    qc:loadQC,qchistory:loadQCHistory,invoice:loadPendingInvoices,mygrns:loadMyGRNs,
+    newitem:loadNewItemRequests};
   if(loaders[id])loaders[id]();
 }
 
@@ -1475,12 +1627,14 @@ const TILE_CFG={
   qc:       {bg:'#FEF3C7',ic:'QC',tc:'#B45309'},
   qchistory:{bg:'#F3F4F6',ic:'QH',tc:'#6B7280'},
   mygrns:   {bg:'#F3F4F6',ic:'GH',tc:'#6B7280'},
+  newitem:  {bg:'#F0F9FF',ic:'NI',tc:'#0369A1'},
   dashboard:{bg:'#1a1208',ic:'DB',tc:'#fff',special:true}
 };
 const TILE_NAMES={
   raise:'New PR',myprs:'My PRs',review:'Review PRs',rfq:'RFQ Status',
   compare:'Compare',approve:'Approve',grn:'GRN Entry',invoice:'Invoices',
   pos:'All POs',qc:'QC Pending',qchistory:'QC History',mygrns:'My GRNs',
+  newitem:'New Item Requests',
   dashboard:'Dashboard'
 };
 
@@ -1774,6 +1928,209 @@ async function loadMyGRNs(){
         </div>
       </div>`).join('');
   }catch(e){el.innerHTML='<div class="em">Error. Tap refresh.</div>';}
+}
+
+// ── NEW ITEM REQUESTS ─────────────────────────────────────
+let _newItemStore=[];
+let _currentNewItem=null;
+
+async function loadNewItemRequests(){
+  const el=document.getElementById('newItemList');
+  if(!el)return;
+  el.innerHTML='<div class="em">Loading…</div>';
+  try{
+    const r=await api({action:'getNewItemRequests'});
+    _newItemStore=r.items||[];
+    setBdg('b-ni',_newItemStore.length);
+    if(!_newItemStore.length){el.innerHTML='<div class="em">No pending new item requests</div>';return;}
+    el.innerHTML=_newItemStore.map((item,i)=>`
+      <div class="pr-card" style="cursor:pointer;" onclick="openNewItemForm(${i})">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+          <div>
+            <div class="pr-num">${item.name} · ${item.dept}</div>
+            <div class="pr-desc">${item.description}</div>
+            ${item.brand?`<div class="pr-meta">Brand: ${item.brand}</div>`:''}
+            ${item.machine?`<div class="pr-meta">For: ${item.machine}</div>`:''}
+          </div>
+          <span class="chip chip-y" style="white-space:nowrap;">${item.urgency||'NORMAL'}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="pr-meta">Qty: ${item.qty} ${item.uom} · Raised: ${item.timestamp}</div>
+          <button class="btn btn-s" style="font-size:11px;padding:4px 10px;">Add to Master →</button>
+        </div>
+      </div>`).join('');
+  }catch(e){el.innerHTML='<div class="em">Error loading requests.</div>';}
+}
+
+function openNewItemForm(idx){
+  _currentNewItem=_newItemStore[idx];
+  const item=_currentNewItem;
+  // Pre-fill info banner
+  document.getElementById('newItemReqInfo').innerHTML=
+    `<div style="font-weight:600;margin-bottom:4px;">📋 Request from ${item.name} (${item.dept})</div>
+     <div>${item.description}</div>
+     ${item.brand?`<div style="margin-top:3px;color:var(--muted);">Brand: ${item.brand} ${item.spec?'· Spec: '+item.spec:''}</div>`:''}
+     ${item.machine?`<div style="color:var(--muted);">For: ${item.machine}</div>`:''}
+     <div style="margin-top:3px;color:var(--muted);">Qty needed: ${item.qty} ${item.uom}</div>`;
+  // Pre-fill fields from request
+  document.getElementById('ni-desc').value=item.description||'';
+  document.getElementById('ni-code').value='';
+  document.getElementById('ni-subcat').value=item.brand||'';
+  document.getElementById('ni-moq').value=item.qty||1;
+  // Set UOM if matches
+  const uomEl=document.getElementById('ni-uom');
+  const uomVal=(item.uom||'NOS').toUpperCase();
+  for(let opt of uomEl.options){if(opt.value===uomVal){uomEl.value=uomVal;break;}}
+  // Clear errors
+  document.getElementById('ni-err').style.display='none';
+  document.getElementById('ni-code-err').style.display='none';
+  document.getElementById('ni-code').oninput=function(){
+    const v=this.value.toUpperCase();
+    this.value=v;
+    if(v.length>=3){validatePartCode(v);}
+    else{document.getElementById('ni-code-err').style.display='none';}
+  };
+  document.getElementById('newItemSh').classList.add('on');
+}
+
+async function validatePartCode(code){
+  const err=document.getElementById('ni-code-err');
+  const r=await api({action:'checkPartCode',partCode:code});
+  if(r.exists){
+    err.textContent='⚠ Part code '+code+' already exists: '+r.desc;
+    err.style.display='block';
+  } else {
+    err.textContent='✓ Available';
+    err.style.color='var(--green)';
+    err.style.display='block';
+  }
+}
+
+async function submitNewItemToMaster(){
+  const code=document.getElementById('ni-code').value.trim().toUpperCase();
+  const desc=document.getElementById('ni-desc').value.trim();
+  const cat=document.getElementById('ni-cat').value;
+  const subcat=document.getElementById('ni-subcat').value.trim();
+  const uom=document.getElementById('ni-uom').value;
+  const tax=document.getElementById('ni-tax').value;
+  const moq=document.getElementById('ni-moq').value||1;
+  const rate=document.getElementById('ni-rate').value||0;
+  const err=document.getElementById('ni-err');
+
+  if(!code){err.textContent='Part code is required';err.style.display='block';return;}
+  if(!desc){err.textContent='Description is required';err.style.display='block';return;}
+  if(!cat){err.textContent='Select a category';err.style.display='block';return;}
+
+  err.style.display='none';
+  const btn=document.querySelector('#newItemSh .btn-g');
+  btn.textContent='Adding…';btn.disabled=true;
+
+  const r=await api({
+    action:'addItemToMaster',
+    partCode:code, itemDesc:desc, category:cat, subCategory:subcat,
+    uom, taxPct:tax, moq, latestRate:rate,
+    formRowIndex:_currentNewItem?._rowIndex||0,
+    requestedBy:_currentNewItem?.name||''
+  });
+
+  btn.textContent='Add to Item Master →';btn.disabled=false;
+
+  if(r.ok){
+    toast('✓ '+code+' added to Item Master','ok');
+    csh('newItemSh');
+    _currentNewItem=null;
+    loadNewItemRequests();
+  } else {
+    err.textContent=r.error||'Failed to add item';
+    err.style.display='block';
+  }
+}
+
+// ── RAW MATERIAL MANUAL PRICE (on Compare screen) ────────
+function showManualPricePanel(rfqNum,itemDesc,category){
+  // Build and inject a manual price entry panel into the compare section
+  const el=document.getElementById('compareContent');
+  if(!el)return;
+  el.innerHTML=`
+    <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:var(--r);padding:16px;margin-bottom:14px;">
+      <div style="font-size:12px;font-weight:700;color:#9A3412;margin-bottom:4px;">⚠ No quotes received</div>
+      <div style="font-size:11px;color:#9A3412;">For RAW MATERIAL — enter the agreed price manually below.</div>
+    </div>
+    <div style="font-size:12px;font-weight:600;margin-bottom:10px;">${itemDesc}</div>
+    <div class="fg"><label>Vendor *</label>
+      <select id="mp-vendor"><option value="">Loading vendors…</option></select>
+    </div>
+    <div class="g2">
+      <div class="fg"><label>Rate ex-GST (₹) *</label>
+        <input type="number" id="mp-rate" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
+      <div class="fg"><label>GST %</label>
+        <select id="mp-gst">
+          <option value="0">0%</option><option value="5">5%</option>
+          <option value="12">12%</option><option value="18" selected>18%</option>
+          <option value="28">28%</option>
+        </select>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="fg"><label>Delivery (days)</label>
+        <input type="number" id="mp-del" value="7" inputmode="numeric">
+      </div>
+      <div class="fg"><label>Payment Terms</label>
+        <select id="mp-pay">
+          <option>60 Days from GRN</option>
+          <option>45 Days from GRN</option>
+          <option>30 Days from GRN</option>
+          <option>Advance</option>
+          <option>Against Delivery</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label>Manager Note to Yash</label>
+      <input type="text" id="mp-note" placeholder="e.g. Negotiated from ₹95 to ₹88 per kg · Market rate confirmed">
+    </div>
+    <div id="mp-err" style="color:var(--accent);font-size:11px;margin-bottom:8px;display:none;"></div>
+    <button class="btn btn-g" style="width:100%;" onclick="submitManualPrice('${rfqNum}')">Send for Yash Approval →</button>`;
+
+  // Load RAW MATERIAL vendors
+  api({action:'getVendors',category:'RAW MATERIAL'}).then(r=>{
+    const sel=document.getElementById('mp-vendor');
+    if(!sel)return;
+    const vendors=r.vendors||[];
+    sel.innerHTML=`<option value="">Select vendor</option>`+
+      vendors.map(v=>`<option value="${v.code}" data-gstin="${v.gstin||''}">${v.name}</option>`).join('');
+  });
+}
+
+async function submitManualPrice(rfqNum){
+  const vendorSel=document.getElementById('mp-vendor');
+  const vendorCode=vendorSel?.value;
+  const vendorName=vendorSel?.options[vendorSel.selectedIndex]?.text||'';
+  const vendorGstin=vendorSel?.options[vendorSel.selectedIndex]?.dataset?.gstin||'';
+  const rate=parseFloat(document.getElementById('mp-rate')?.value)||0;
+  const gst=document.getElementById('mp-gst')?.value||18;
+  const del=document.getElementById('mp-del')?.value||7;
+  const pay=document.getElementById('mp-pay')?.value||'60 Days from GRN';
+  const note=document.getElementById('mp-note')?.value||'';
+  const err=document.getElementById('mp-err');
+
+  if(!vendorCode){err.textContent='Select a vendor';err.style.display='block';return;}
+  if(!rate){err.textContent='Enter the agreed rate';err.style.display='block';return;}
+  err.style.display='none';
+
+  const r=await api({
+    action:'submitVendorQuote',
+    rfqNum, vendorCode, vendorName, vendorGstin,
+    rateExGST:rate, gstPct:gst, deliveryDays:del,
+    paymentTerms:pay, managerNote:note,
+    isManualEntry:true
+  });
+  if(r.ok){
+    toast('Price submitted — RFQ sent to Yash for approval','ok');
+    loadCompare();
+  } else {
+    err.textContent=r.error||'Submission failed';err.style.display='block';
+  }
 }
 
 
