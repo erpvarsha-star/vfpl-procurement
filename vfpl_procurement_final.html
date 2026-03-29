@@ -1116,7 +1116,7 @@ async function loadRFQ(){
   }catch(e){el.innerHTML='<div class="em">Error. Tap refresh.</div>';}
 }
 
-// ── QUOTE COMPARISON ───────────────────────────────────────────────
+// ── COMPARE ───────────────────────────────────────────────
 let selVendor={};
 async function loadCompare(){
   const el=document.getElementById('compareList');
@@ -1403,7 +1403,7 @@ async function submitGRN(){
   }catch(e){toast('Connection error','err');}
 }
 
-// ── PO STATUS ───────────────────────────────────────────────
+// ── ALL POs ───────────────────────────────────────────────
 async function loadPOs(){
   const el=document.getElementById('posList');
   el.innerHTML='<div class="em">Loading…</div>';
@@ -1988,75 +1988,22 @@ function updateTileCounts(r){
 // resize handler removed — caused PIN screen dancing on mobile keyboard open
 
 
-// FINAL NAV FIX
+// FINAL EXECUTION FIX
 (function(){
 
-const ROLE_ACCESS = {
-  RAISER: ['raise','myprs','dashboard'],
-  PR_RAISER: ['raise','myprs','dashboard'],
-  PURCHASE_OFFICER: ['review','rfq','compare','grn','invoice','pos','dashboard'],
-  PURCHASE_MANAGER: ['compare','rfq','pos','dashboard'],
-  PO_APPROVER: ['approve','compare','review','rfq','grn','invoice','pos','dashboard'],
-  GRN_GATE: ['grn','invoice','mygrns','dashboard'],
-  QUALITY: ['qc','qchistory']
-};
-
-const SECTION_MAP = {
-  raise: 'sec-raise',
-  myprs: 'sec-myprs',
-  review: 'sec-review',
-  rfq: 'sec-rfq',
-  compare: 'sec-compare',
-  approve: 'sec-approve',
-  grn: 'sec-grn',
-  pos: 'sec-pos',
-  dashboard: 'sec-dashboard',
-  qc: 'sec-qc',
-  qchistory: 'sec-qchistory',
-  invoice: 'sec-invoice',
-  mygrns: 'sec-mygrns'
-};
 window.openSection = function(id){
 
-  // 🔥 STEP 1: find original tab
-  const tab = [...document.querySelectorAll('.tab')]
-    .find(t => t.dataset.sec === id);
+  const tab = Array.from(document.querySelectorAll('.tab'))
+    .find(t => t.dataset && t.dataset.sec === id);
 
-  // 🔥 STEP 2: trigger original system FIRST
   if(tab){
     if(typeof tab.onclick === 'function'){
-      tab.onclick();   // direct call (most reliable)
+      tab.onclick();
     } else {
       tab.dispatchEvent(new Event('click', { bubbles: true }));
     }
   }
 
-  // 🔥 STEP 3: now control visibility
-  document.querySelectorAll('.sec').forEach(s => {
-    s.classList.remove('on');
-    s.style.display = 'none';
-  });
-
-  const el = document.getElementById(id);
-  if(el){
-    el.classList.add('on');
-    el.style.display = 'block';
-  }
-
-  // 🔥 STEP 4: UI controls
-  const hg = document.getElementById('homeGrid');
-  const back = document.getElementById('backHomeBtn');
-
-  if(hg) hg.style.display = 'none';
-  if(back) back.style.display = 'flex';
-};
-  
-function getRole(){
-  return window.USER_ROLE || 'RAISER';
-}
-
-window.openSection = function(id){
-
   document.querySelectorAll('.sec').forEach(s => {
     s.classList.remove('on');
     s.style.display = 'none';
@@ -2073,47 +2020,7 @@ window.openSection = function(id){
 
   if(hg) hg.style.display = 'none';
   if(back) back.style.display = 'flex';
-
-  if(typeof window.onSectionOpen === 'function'){
-    window.onSectionOpen(id);
-  }
-
 };
-
-window.goHome = function(){
-  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
-
-  const hg = document.getElementById('homeGrid');
-  const back = document.getElementById('backHomeBtn');
-
-  if(hg) hg.style.display = 'grid';
-  if(back) back.style.display = 'none';
-};
-
-function buildHomeGrid(){
-  const grid = document.getElementById('homeGrid');
-  if(!grid) return;
-
-  grid.innerHTML = '';
-  const role = getRole();
-  const sections = ROLE_ACCESS[role] || [];
-
-  sections.forEach(key => {
-    const secId = SECTION_MAP[key];
-    if(!secId) return;
-
-    const tile = document.createElement('div');
-    tile.className = 'home-tile';
-    tile.onclick = () => window.openSection(secId);
-    tile.innerHTML = '<div class="tile-nm">'+key.toUpperCase()+'</div>';
-
-    grid.appendChild(tile);
-  });
-}
-
-window.addEventListener('load', function(){
-  setTimeout(buildHomeGrid, 100);
-});
 
 })();
 
