@@ -1988,7 +1988,9 @@ function updateTileCounts(r){
 // resize handler removed — caused PIN screen dancing on mobile keyboard open
 
 
-// NAV FIX
+// FINAL NAV FIX
+(function(){
+
 const ROLE_ACCESS = {
   RAISER: ['raise','myprs','dashboard'],
   PR_RAISER: ['raise','myprs','dashboard'],
@@ -2015,9 +2017,11 @@ const SECTION_MAP = {
   mygrns: 'sec-mygrns'
 };
 
-let CURRENT_ROLE = 'RAISER';
+function getRole(){
+  return window.USER_ROLE || 'RAISER';
+}
 
-function openSection(id){
+window.openSection = function(id){
   document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
   const el = document.getElementById(id);
   if(el) el.classList.add('on');
@@ -2027,9 +2031,9 @@ function openSection(id){
 
   if(hg) hg.style.display = 'none';
   if(back) back.style.display = 'flex';
-}
+};
 
-function goHome(){
+window.goHome = function(){
   document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
 
   const hg = document.getElementById('homeGrid');
@@ -2037,14 +2041,15 @@ function goHome(){
 
   if(hg) hg.style.display = 'grid';
   if(back) back.style.display = 'none';
-}
+};
 
 function buildHomeGrid(){
   const grid = document.getElementById('homeGrid');
   if(!grid) return;
 
   grid.innerHTML = '';
-  const sections = ROLE_ACCESS[CURRENT_ROLE] || [];
+  const role = getRole();
+  const sections = ROLE_ACCESS[role] || [];
 
   sections.forEach(key => {
     const secId = SECTION_MAP[key];
@@ -2052,7 +2057,7 @@ function buildHomeGrid(){
 
     const tile = document.createElement('div');
     tile.className = 'home-tile';
-    tile.onclick = () => openSection(secId);
+    tile.onclick = () => window.openSection(secId);
     tile.innerHTML = '<div class="tile-nm">'+key.toUpperCase()+'</div>';
 
     grid.appendChild(tile);
@@ -2060,8 +2065,10 @@ function buildHomeGrid(){
 }
 
 window.addEventListener('load', function(){
-  buildHomeGrid();
+  setTimeout(buildHomeGrid, 100);
 });
+
+})();
 
 </script>
 
