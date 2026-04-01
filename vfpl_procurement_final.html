@@ -410,7 +410,9 @@ async function doLogin(){
 
 // ── TABS + HOME GRID ──────────────────────────────────────
 function setupTabs(role){
-  const tabs=ROLE_TABS[role]||ROLE_TABS.PR_RAISER;
+  // Extract primary role (before comma if comma-separated)
+  const primary=(role||'').split(',')[0].trim();
+  const tabs=ROLE_TABS[primary]||ROLE_TABS.PR_RAISER;
   document.getElementById('tabBar').innerHTML=tabs.map((t,i)=>
     `<div class="tab${i===0?' on':''}" data-tab="${t.id}" onclick="showTab(this)">${t.lb}${t.bd?`<span class="badge zero" id="${t.bd}">0</span>`:''}</div>`
   ).join('');
@@ -420,7 +422,8 @@ function setupTabs(role){
 const TILE_CFG={raise:{bg:'#EFF6FF',ic:'PR',tc:'#1D4ED8'},myprs:{bg:'#EFF6FF',ic:'MY',tc:'#1D4ED8'},review:{bg:'#FFF7ED',ic:'RV',tc:'#C2410C'},rfq:{bg:'#F5F3FF',ic:'RQ',tc:'#6D28D9'},compare:{bg:'#F0FDF4',ic:'CM',tc:'#15803D'},approve:{bg:'#EFF6FF',ic:'AP',tc:'#1D4ED8'},poreview:{bg:'#FFFBEB',ic:'PV',tc:'#92400E'},release:{bg:'#FEF3C7',ic:'RL',tc:'#B45309'},dc:{bg:'#FFF7ED',ic:'DC',tc:'#C2410C'},gengrn:{bg:'#F0FDF4',ic:'GN',tc:'#15803D'},qc:{bg:'#FEF3C7',ic:'QC',tc:'#B45309'},invoice:{bg:'#F3E8FF',ic:'IN',tc:'#7C3AED'},newitem:{bg:'#F0F9FF',ic:'NI',tc:'#0369A1'},pos:{bg:'#F0FDF4',ic:'PO',tc:'#15803D'},dashboard:{bg:'#1a1208',ic:'DB',tc:'#fff',special:true}};
 const TILE_NM={raise:'New PR',myprs:'My PRs',review:'Review PRs',rfq:'RFQ Status',compare:'Compare Quotes',approve:'Approve Selection',poreview:'Review PO',release:'Release PO',dc:'Record DC',gengrn:'Generate GRN',qc:'QC Pending',invoice:'Invoices',newitem:'New Items',pos:'All POs',dashboard:'Dashboard'};
 function buildHomeGrid(role){
-  const tabs=ROLE_TABS[role]||ROLE_TABS.PR_RAISER;
+  const primary=(role||'').split(',')[0].trim();
+  const tabs=ROLE_TABS[primary]||ROLE_TABS.PR_RAISER;
   const grid=document.getElementById('homeGrid');if(!grid)return;
   const reg=tabs.filter(t=>t.id!=='dashboard'),hasDash=tabs.find(t=>t.id==='dashboard');
   grid.innerHTML='<p class="home-grid-hdr">What do you want to do?</p>';
@@ -655,12 +658,15 @@ function openRev(idx){
 <div class="idr"><span class="idy">Category</span><span class="idv">${actPR.category}</span></div>
 <div class="idr"><span class="idy">Plant / Dept</span><span class="idv">${actPR.plant} / ${actPR.dept}</span></div>
 <div class="idr"><span class="idy">Raised By</span><span class="idv">${actPR.raisedBy}</span></div></div>`;
-  html+=`<div style="font-size:10px;font-weight:600;color:var(--muted);margin-bottom:6px;">LINE ITEMS (${items.length})</div>`;
+  html+=`<div style="font-size:10px;font-weight:600;color:var(--muted);margin-bottom:6px;">LINE ITEMS (${items.length}) — tick items to include in RFQ</div>`;
   items.forEach((it,i)=>{
     html+=`<div class="card" style="margin-bottom:8px;"><div class="card-b" style="padding:10px 12px;">
-<div style="font-weight:600;font-size:13px;">${it.itemCode} — ${(it.itemDesc||'').slice(0,60)}</div>
+<div style="display:flex;gap:10px;align-items:flex-start;">
+<input type="checkbox" class="rfq-item-chk" data-idx="${i}" data-code="${it.itemCode}" checked style="margin-top:4px;width:18px;height:18px;accent-color:var(--accent);flex-shrink:0;">
+<div style="flex:1;"><div style="font-weight:600;font-size:13px;">${it.itemCode} — ${(it.itemDesc||'').slice(0,60)}</div>
 <div style="font-size:12px;color:var(--muted);margin-top:3px;">Qty: ${it.qty} ${it.uom}</div>
 <div id="revItemInfo_${i}" style="margin-top:6px;font-size:11px;color:var(--muted);">Loading stock & price…</div>
+</div></div>
 </div></div>`;
   });
   document.getElementById('revShBd').innerHTML=html;
@@ -692,6 +698,15 @@ async function doRejectPR(){const reason=document.getElementById('revRejectReaso
 async function doHoldPR(){const reason=document.getElementById('revHoldReason').value.trim();if(!reason){toast('Enter reason','err');return;}csh('revSh');const r=await api({action:'closePR',prNum:actPR.prNum,reason:'ON HOLD: '+reason,status:'ON_HOLD'});if(r.ok){toast('PR on hold');loadReview();}else toast(r.error||'Failed','err');}
 async function doPRClose(){csh('revSh');const r=await api({action:'closePR',prNum:actPR.prNum,reason:'Stock available'});if(r.ok){toast('PR closed — stock OK');loadReview();}else toast(r.error||'Failed','err');}
 function doFloatRFQ(){
+  // Collect checked items
+  const checks=document.querySelectorAll('.rfq-item-chk:checked');
+  if(!checks.length){toast('Tick at least one item for RFQ','err');return;}
+  const items=actPR.items||[{lineNum:1,itemCode:actPR.itemCode,itemDesc:actPR.itemDesc,qty:actPR.qty,uom:actPR.uom}];
+  S._rfqSelectedItems=[];
+  checks.forEach(chk=>{
+    const idx=parseInt(chk.dataset.idx);
+    if(items[idx])S._rfqSelectedItems.push(items[idx]);
+  });
   csh('revSh');
   document.getElementById('rfq-payterms').value='60 Days';
   document.getElementById('rfq-delivery').value=actPR.category==='RAW MATERIAL'?'15 days from PO':'2 days from PO';
@@ -705,10 +720,13 @@ function confirmRFQTerms(){
   openPIN('rfq',async(pin)=>{
     toast('Sending RFQ…');
     const t=S.rfqTerms||{};
+    const selItems=S._rfqSelectedItems||[];
     try{const r=await api({action:'confirmRFQMulti',pin:pin,prNum:actPR.prNum,category:actPR.category,
-      plant:actPR.plant,payTerms:t.payTerms||'',delivery:t.delivery||'',freight:t.freight||'',packaging:t.packaging||'',specialInst:t.special||''});
-      if(r.ok)toast(`RFQ sent to ${r.vendorsSent} vendors · ${r.rfqNum}`);
+      plant:actPR.plant,payTerms:t.payTerms||'',delivery:t.delivery||'',freight:t.freight||'',packaging:t.packaging||'',specialInst:t.special||'',
+      selectedItems:selItems.length>0?JSON.stringify(selItems):''});
+      if(r.ok)toast(`RFQ sent to ${r.vendorsSent} vendors · ${r.itemCount} items · ${r.rfqNum}`);
       else toast(r.error||'RFQ failed','err');
+      S._rfqSelectedItems=[];
       loadReview();
     }catch(e){toast('Error','err');}
   });
@@ -744,20 +762,60 @@ async function loadCompare(){
     if(!cmps.length){el.innerHTML='<div class="em">No comparisons ready</div>';setBdg('b-cmp',0);return;}
     setBdg('b-cmp',cmps.length);
     el.innerHTML=cmps.map(cmp=>{
-      const rc=['r1','r2','r3'],lc=['l1','l2','l3'];
-      const rows=(cmp.quotes||[]).map((q,i)=>`<div class="cmp-row ${lc[i]||''} ${S.selVendor[cmp.rfqNum]?.code===q.vendorCode?'sel':''}"
+      const k=cmp.rfqNum.replace(/\//g,'_');
+      // Check if multi-item: quotes have itemCode field
+      const hasMultiItems=(cmp.quotes||[]).some(q=>q.itemCode);
+      if(hasMultiItems){
+        // Group quotes by itemCode
+        const itemMap={};
+        (cmp.quotes||[]).forEach(q=>{
+          const ic=q.itemCode||'UNKNOWN';
+          if(!itemMap[ic])itemMap[ic]={itemCode:ic,itemDesc:q.itemDesc||'',qty:q.qty||'',uom:q.uom||'',vendors:[]};
+          itemMap[ic].vendors.push(q);
+        });
+        const itemGroups=Object.values(itemMap);
+        // Multi-item comparison: one section per item
+        let html=`<div style="margin-bottom:20px;border:2px solid var(--accent);border-radius:var(--r);overflow:hidden;">
+<div style="background:var(--accent);color:#fff;padding:10px 14px;font-size:13px;font-weight:600;">${cmp.rfqNum} · ${itemGroups.length} items</div>`;
+        itemGroups.forEach(ig=>{
+          const rc=['r1','r2','r3'],lc=['l1','l2','l3'];
+          html+=`<div style="padding:10px 14px;border-top:1px solid var(--border);">
+<div style="font-weight:600;font-size:12px;color:var(--accent2);">${ig.itemCode} — ${(ig.itemDesc||'').slice(0,50)}</div>
+<div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Qty: ${ig.qty} ${ig.uom}</div>`;
+          ig.vendors.sort((a,b)=>(parseFloat(a.rateExGST)||0)-(parseFloat(b.rateExGST)||0));
+          ig.vendors.forEach((q,i)=>{
+            html+=`<div class="cmp-row ${lc[i]||''} ${S.selVendor[cmp.rfqNum+'|'+ig.itemCode]?.code===q.vendorCode?'sel':''}"
+onclick="selVMulti('${cmp.rfqNum}','${ig.itemCode}','${q.vendorCode}','${esc(q.vendorName)}',${q.rateExGST},'${q.rank}',this)">
+<div class="rk ${rc[i]||'r3'}">${q.rank}</div><div><div class="cmp-vname">${q.vendorName}</div><div style="font-size:10px;color:var(--muted);">${q.deliveryDays}d${q.brand?' · '+q.brand:''}</div></div>
+<div class="cmp-rate">₹${q.rateExGST}</div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);">${q.gstPct}%</div>
+<div class="${i===0?'cmp-diff-g':'cmp-diff-r'}">${q.vsL1||''}</div></div>`;
+          });
+          html+=`</div>`;
+        });
+        html+=`<div style="padding:10px 14px;border-top:1px solid var(--border);">
+<div id="cmpst-${k}" style="font-size:11px;color:var(--muted);margin-bottom:8px;">Select vendor per item above</div>
+<div class="fg"><label>Note if not L1</label><textarea id="cnote-${k}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;min-height:50px;" placeholder="Reason…"></textarea></div>
+<button class="btn btn-b btn-sm" onclick="sendForApprovalMulti('${cmp.rfqNum}')">Send for Approval →</button>
+</div></div>`;
+        return html;
+      } else {
+        // Single-item comparison (original layout)
+        const rc=['r1','r2','r3'],lc=['l1','l2','l3'];
+        const rows=(cmp.quotes||[]).map((q,i)=>`<div class="cmp-row ${lc[i]||''} ${S.selVendor[cmp.rfqNum]?.code===q.vendorCode?'sel':''}"
 onclick="selV('${cmp.rfqNum}','${q.vendorCode}','${esc(q.vendorName)}',${q.rateExGST},'${q.rank}',this)">
 <div class="rk ${rc[i]||'r3'}">${q.rank}</div><div><div class="cmp-vname">${q.vendorName}</div><div style="font-size:10px;color:var(--muted);">${q.deliveryDays}d${q.brand?' · '+q.brand:''}</div></div>
 <div class="cmp-rate">₹${q.rateExGST}</div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);">${q.gstPct}%</div>
 <div class="${i===0?'cmp-diff-g':'cmp-diff-r'}">${q.vsL1||''}</div></div>`).join('');
-      const k=cmp.rfqNum.replace(/\//g,'_');
-      return `<div style="margin-bottom:16px;"><div class="cmp-hd"><div style="font-family:var(--mono);font-size:12px;font-weight:600;">${cmp.rfqNum}</div>
-<div style="font-size:13px;margin-top:2px;">${cmp.itemDesc||'—'} · ${cmp.qty||''} ${cmp.uom||''}</div>
+        let descHtml=cmp.itemDesc||'—';
+        try{const arr=JSON.parse(descHtml);if(Array.isArray(arr))descHtml=arr.map(it=>it.itemCode+' — '+(it.itemDesc||'').slice(0,35)+' × '+it.qty).join('<br>');}catch(e){}
+        return `<div style="margin-bottom:16px;"><div class="cmp-hd"><div style="font-family:var(--mono);font-size:12px;font-weight:600;">${cmp.rfqNum}</div>
+<div style="font-size:13px;margin-top:2px;">${descHtml} · ${cmp.qty||''} ${cmp.uom||''}</div>
 ${cmp.lastPrice?`<div style="margin-top:6px;font-size:11px;"><span style="color:var(--green);font-weight:600;">Last: ₹${cmp.lastPrice}</span> from ${cmp.lastVendor||'—'}</div>`:''}</div>
 <div class="cmp-body">${rows}</div>
 <div style="margin-top:8px;font-size:11px;color:var(--muted);padding:8px;background:var(--paper);border:1px solid var(--border);border-radius:var(--r);" id="cmpst-${k}">Tap a row to select</div>
 <div class="fg" style="margin-top:8px;"><label>Note if not L1</label><textarea id="cnote-${k}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;min-height:50px;" placeholder="Reason…"></textarea></div>
 <button class="btn btn-b btn-sm" onclick="sendForApproval('${cmp.rfqNum}','${esc(cmp.itemDesc)}')">Send for Approval →</button></div>`;
+      }
     }).join('');
   }catch(e){el.innerHTML='<div class="em">Error.</div>';}
 }
@@ -767,10 +825,32 @@ function selV(rfq,code,name,rate,rank,el){
   const st=document.getElementById('cmpst-'+rfq.replace(/\//g,'_'));
   if(st){st.textContent=`Selected: ${rank} — ${name} · ₹${rate}`;st.style.color='var(--accent2)';}
 }
+function selVMulti(rfq,itemCode,code,name,rate,rank,el){
+  // For multi-item: track selection per item within this RFQ
+  const parent=el.parentElement;if(parent)parent.querySelectorAll('.cmp-row').forEach(r=>r.classList.remove('sel'));
+  el.classList.add('sel');
+  const key=rfq+'|'+itemCode;
+  S.selVendor[key]={code,name,rate,rank,itemCode};
+  // Update status
+  const k=rfq.replace(/\//g,'_');
+  const st=document.getElementById('cmpst-'+k);
+  // Count how many items have selections
+  const allKeys=Object.keys(S.selVendor).filter(sk=>sk.startsWith(rfq+'|'));
+  if(st){st.textContent=allKeys.length+' item(s) selected';st.style.color='var(--accent2)';}
+}
 async function sendForApproval(rfq,desc){
   const sel=S.selVendor[rfq];if(!sel){toast('Select a vendor','err');return;}
   const note=document.getElementById('cnote-'+rfq.replace(/\//g,'_'))?.value||'';
   const r=await api({action:'selectVendor',rfqNum:rfq,vendorCode:sel.code,vendorName:sel.name,rate:sel.rate,rank:sel.rank,itemDesc:desc,managerNote:note,selectedBy:S.user?.name||''});
+  if(r.ok){toast('Sent for approval');loadCompare();}else toast(r.error||'Failed','err');
+}
+async function sendForApprovalMulti(rfq){
+  // Collect per-item selections
+  const allKeys=Object.keys(S.selVendor).filter(sk=>sk.startsWith(rfq+'|'));
+  if(!allKeys.length){toast('Select vendor for each item','err');return;}
+  const selections=allKeys.map(sk=>S.selVendor[sk]);
+  const note=document.getElementById('cnote-'+rfq.replace(/\//g,'_'))?.value||'';
+  const r=await api({action:'selectVendor',rfqNum:rfq,selections:JSON.stringify(selections),managerNote:note,selectedBy:S.user?.name||''});
   if(r.ok){toast('Sent for approval');loadCompare();}else toast(r.error||'Failed','err');
 }
 
@@ -1127,9 +1207,39 @@ async function initVendorMode(rfq,token,vendor){
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
   const el=document.getElementById('sec-vform');el.classList.add('on');
   const d7=new Date();d7.setDate(d7.getDate()+7);
-  el.innerHTML=`<div class="rfq-hd"><div class="rfq-co">VARSHA FORGINGS PVT LTD</div>
-<div class="rfq-num">RFQ: ${rfq} · Vendor: ${decodeURIComponent(vendor||'')}</div></div>
-<div class="idb" id="vf-det">Loading…</div>
+  el.innerHTML='<div class="em">Loading RFQ details…</div>';
+  try{
+    const r=await api({action:'getVendorQuoteForm',token:token});
+    if(r.alreadySubmitted){el.innerHTML='<div class="em" style="min-height:60vh;">Already Submitted — thank you.</div>';return;}
+    if(!r.ok){el.innerHTML='<div class="em">Error loading form</div>';return;}
+    // Check if multi-item
+    let items=[];
+    try{items=JSON.parse(r.itemDesc||'[]');}catch(e){items=[];}
+    const isMulti=Array.isArray(items)&&items.length>0;
+    let html=`<div class="rfq-hd"><div class="rfq-co">VARSHA FORGINGS PVT LTD</div>
+<div class="rfq-num">RFQ: ${rfq} · Vendor: ${decodeURIComponent(vendor||'')}</div>
+<div style="font-size:11px;color:var(--muted);margin-top:4px;">Deadline: <strong style="color:var(--accent);">${r.deadline||''}</strong></div></div>`;
+    if(isMulti){
+      // Multi-item: show each item with rate input
+      html+=`<div style="font-size:10px;font-weight:600;color:var(--muted);margin:12px 0 6px;">ITEMS TO QUOTE (${items.length})</div>`;
+      items.forEach((it,i)=>{
+        html+=`<div class="card" style="margin-bottom:10px;"><div class="card-b" style="padding:10px 12px;">
+<div style="font-weight:600;font-size:13px;">${it.itemCode} — ${(it.itemDesc||'').slice(0,55)}</div>
+<div style="font-size:12px;color:var(--muted);margin:3px 0 8px;">Qty: ${it.qty} ${it.uom||''}</div>
+<div class="g2"><div class="fg"><label>Your Rate ex-GST *</label><input type="number" class="vf-item-rate" data-idx="${i}" data-code="${it.itemCode}" data-desc="${esc(it.itemDesc||'')}" data-qty="${it.qty}" data-uom="${it.uom||''}" placeholder="0.00" inputmode="decimal"></div>
+<div class="fg"><label>GST %</label><select class="vf-item-gst" data-idx="${i}"><option>0%</option><option>5%</option><option>12%</option><option selected>18%</option><option>28%</option></select></div></div>
+</div></div>`;
+      });
+      html+=`<div class="card"><div class="card-h"><div class="card-title">Common Details</div></div><div class="card-b">
+<div class="fg"><label>Brand / Make *</label><input type="text" id="vf-brand" placeholder="e.g. SKF, Norton"></div>
+<div class="g2"><div class="fg"><label>Delivery Days *</label><input type="number" id="vf-lead" value="7" inputmode="numeric"></div>
+<div class="fg"><label>Valid Until</label><input type="date" id="vf-val" value="${d7.toISOString().split('T')[0]}"></div></div>
+<div class="fg"><label>Remarks</label><textarea id="vf-vrem" placeholder="Brand details, warranty…"></textarea></div>
+<button class="btn btn-g" style="width:100%;" onclick="submitVQMulti('${rfq}','${token}')">Submit Quotation for All Items</button>
+</div></div>`;
+    } else {
+      // Single item
+      html+=`<div class="idb"><div class="idr"><span class="idy">Part Code</span><span class="idv">${r.itemCode||''}</span></div><div class="idr"><span class="idy">Description</span><span class="idv">${r.itemDesc||''}</span></div><div class="idr"><span class="idy">Qty</span><span class="idv">${r.qty||''} ${r.uom||''}</span></div></div>
 <div class="card"><div class="card-h"><div class="card-title">Your Quotation</div></div><div class="card-b">
 <div class="fg"><label>Brand / Make *</label><input type="text" id="vf-brand" placeholder="e.g. SKF, Norton"></div>
 <div class="g2"><div class="fg"><label>MRP (optional)</label><input type="number" id="vf-mrp" inputmode="decimal"></div>
@@ -1140,10 +1250,9 @@ async function initVendorMode(rfq,token,vendor){
 <div class="fg"><label>Remarks</label><textarea id="vf-vrem" placeholder="Brand details, warranty…"></textarea></div>
 <button class="btn btn-g" style="width:100%;" onclick="submitVQ('${rfq}','${token}')">Submit Quotation</button>
 </div></div>`;
-  try{const r=await api({action:'getVendorQuoteForm',token:token});
-    if(r.ok)document.getElementById('vf-det').innerHTML=`<div class="idr"><span class="idy">Part Code</span><span class="idv">${r.itemCode}</span></div><div class="idr"><span class="idy">Description</span><span class="idv">${r.itemDesc}</span></div><div class="idr"><span class="idy">Qty</span><span class="idv">${r.qty} ${r.uom}</span></div><div class="idr"><span class="idy">Deadline</span><span class="idv" style="color:var(--accent);">${r.deadline}</span></div>`;
-    if(r.alreadySubmitted)el.innerHTML='<div class="em" style="min-height:60vh;">Already Submitted — thank you.</div>';
-  }catch(e){}
+    }
+    el.innerHTML=html;
+  }catch(e){el.innerHTML='<div class="em">Error loading form</div>';}
 }
 async function submitVQ(rfq,token){
   const brand=document.getElementById('vf-brand').value.trim(),rate=document.getElementById('vf-rate').value,lead=document.getElementById('vf-lead').value;
@@ -1152,6 +1261,30 @@ async function submitVQ(rfq,token){
   try{const r=await api({action:'submitVendorQuote',rfqNum:rfq,token:token,brand:brand,
     listPrice:document.getElementById('vf-mrp').value||'',rateExGST:rate,
     gstPct:document.getElementById('vf-gst').value.replace('%',''),deliveryDays:lead,
+    validUntil:document.getElementById('vf-val').value,remarks:document.getElementById('vf-vrem').value||''});
+    if(r.ok)document.getElementById('sec-vform').innerHTML='<div class="em" style="min-height:60vh;"><div style="width:48px;height:48px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L19 7" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg></div>Quotation Submitted — Thank you.</div>';
+    else toast(r.error||'Failed','err');
+  }catch(e){toast('Error','err');}
+}
+async function submitVQMulti(rfq,token){
+  const brand=document.getElementById('vf-brand').value.trim();
+  const lead=document.getElementById('vf-lead').value;
+  if(!brand){toast('Enter brand','err');return;}
+  // Collect per-item rates
+  const rateInputs=document.querySelectorAll('.vf-item-rate');
+  const gstInputs=document.querySelectorAll('.vf-item-gst');
+  const itemRates=[];
+  let valid=true;
+  rateInputs.forEach((inp,i)=>{
+    const rate=parseFloat(inp.value)||0;
+    if(rate<=0){valid=false;inp.style.borderColor='var(--accent)';}
+    const gstSel=gstInputs[i];
+    itemRates.push({itemCode:inp.dataset.code,itemDesc:inp.dataset.desc,qty:inp.dataset.qty,uom:inp.dataset.uom,rate:rate,gstPct:gstSel?gstSel.value.replace('%',''):'18'});
+  });
+  if(!valid){toast('Enter rate for all items','err');return;}
+  toast('Submitting…');
+  try{const r=await api({action:'submitVendorQuote',rfqNum:rfq,token:token,brand:brand,
+    itemRates:JSON.stringify(itemRates),deliveryDays:lead,
     validUntil:document.getElementById('vf-val').value,remarks:document.getElementById('vf-vrem').value||''});
     if(r.ok)document.getElementById('sec-vform').innerHTML='<div class="em" style="min-height:60vh;"><div style="width:48px;height:48px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L19 7" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg></div>Quotation Submitted — Thank you.</div>';
     else toast(r.error||'Failed','err');
