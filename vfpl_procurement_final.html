@@ -385,6 +385,9 @@ function osh(id){document.getElementById(id)?.classList.add('on');}
 function toast(msg,type){const t=document.getElementById('tst');t.textContent=msg;t.className='tst '+(type||'ok')+' on';clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),3500);}
 function esc(s){return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function fmtDate(d){if(!d)d=new Date();return d.getDate().toString().padStart(2,'0')+'-'+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]+'-'+d.getFullYear();}
+function cleanDesc(raw){if(!raw)return"—";try{const arr=JSON.parse(raw);if(Array.isArray(arr)&&arr.length>0)return arr.map(it=>(it.itemDesc||it.itemCode||"").trim()).filter(Boolean).join(", ");}catch(e){}return String(raw);}
+function fmtISODate(v){if(!v)return"—";try{const d=new Date(v);if(isNaN(d.getTime()))return String(v);return fmtDate(d);}catch(e){return String(v);}}
+function urgClass(u){return u==="RED"?"urg":u==="ORANGE"?"med":"";}
 function fmtINR(n){return Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});}
 
 // close overlays on bg click
@@ -620,9 +623,9 @@ async function loadMyPRs(){
       const rej=pr.status==='REJECTED'||pr.status==='ON_HOLD';
       const s=rej?-1:stg(pr.status);
       const items=pr.items||[];
-      return `<div class="pr-card ${pr.urgency==='RED'?'urg':''}">
-<div style="display:flex;justify-content:space-between;"><div><div class="pr-num">${pr.prNum} · ${pr.date}</div><div class="pr-desc">${items.length>1?items.length+' items — '+pr.category:pr.itemDesc||pr.itemCode}</div><div class="pr-meta">${pr.dept} · Req: ${pr.reqBy}</div></div>
-<span class="chip ${pr.urgency==='RED'?'chip-r':'chip-y'}">${pr.urgency}</span></div>
+      return `<div class="pr-card ${urgClass(pr.urgency)}">
+<div style="display:flex;justify-content:space-between;"><div><div class="pr-num">${pr.prNum} · ${pr.date}</div><div class="pr-desc">${items.length>1?(items.length+' items — '+pr.category):cleanDesc(pr.itemDesc)||pr.itemCode}</div><div class="pr-meta">${pr.dept} · Req: ${pr.reqBy}</div></div>
+<span class="chip ${pr.urgency==='RED'?'chip-r':pr.urgency==='ORANGE'?'chip-o':'chip-y'}">${pr.urgency}</span></div>
 ${rej?`<div style="margin-top:8px;padding:6px 10px;background:#fee2e2;border-radius:5px;font-size:11px;color:#991b1b;font-weight:600;">${pr.status==='REJECTED'?'✕ Rejected':'⏸ On Hold'}</div>`:
 `<div style="margin-top:8px;display:flex;gap:2px;">${STAGES.map((_,i)=>`<div style="flex:1;height:4px;border-radius:2px;background:${i<=s?'var(--green)':'var(--border)'};"></div>`).join('')}</div>
 <div style="font-size:9px;color:var(--muted);margin-top:3px;">${pr.status.replace(/_/g,' ')}</div>`}
@@ -640,11 +643,11 @@ async function loadReview(){
     const r=await api({action:'getPRsWithItems',status:'PENDING_REVIEW'});
     if(!r.ok||!r.prs||!r.prs.length){el.innerHTML='<div class="em">No PRs pending</div>';setBdg('b-rev',0);return;}
     setBdg('b-rev',r.prs.length);prStore=r.prs;
-    el.innerHTML=r.prs.map((pr,i)=>`<div class="pr-card ${pr.urgency==='RED'?'urg':''}" onclick="openRev(${i})">
+    el.innerHTML=r.prs.map((pr,i)=>`<div class="pr-card ${urgClass(pr.urgency)}" onclick="openRev(${i})">
 <div style="display:flex;justify-content:space-between;"><div><div class="pr-num">${pr.prNum} · ${pr.date} · ${pr.plant}/${pr.dept}</div>
-<div class="pr-desc">${(pr.items||[]).length>1?(pr.items.length+' items'):pr.itemDesc||pr.itemCode}</div>
+<div class="pr-desc">${(pr.items||[]).length>1?((pr.items.length)+' items — '+pr.category):cleanDesc(pr.itemDesc)||pr.itemCode}</div>
 <div class="pr-meta">${pr.qty||''} ${pr.uom||''} · By: ${pr.raisedBy}</div></div>
-<span class="chip ${pr.urgency==='RED'?'chip-r':'chip-y'}">${pr.urgency}</span></div>
+<span class="chip ${pr.urgency==='RED'?'chip-r':pr.urgency==='ORANGE'?'chip-o':'chip-y'}">${pr.urgency}</span></div>
 ${pr.remarks?`<div style="font-size:11px;color:var(--muted);margin-top:4px;">${esc(pr.remarks)}</div>`:''}</div>`).join('');
   }catch(e){el.innerHTML='<div class="em">Error loading.</div>';}
 }
@@ -864,7 +867,7 @@ async function loadApprove(){
     setBdg('b-app',r.approvals.length);S.approvalStore=r.approvals;
     el.innerHTML=r.approvals.map((a,i)=>{
       const sel=(a.quotes||[]).find(q=>q.isSelected)||{};
-      return `<div class="card"><div class="card-h"><div><div class="card-id">${a.rfqNum}</div><div style="font-size:13px;font-weight:500;margin-top:2px;">${a.itemDesc||''}</div></div><span class="chip chip-b">PENDING</span></div>
+      return `<div class="card ${urgClass(a.urgency||'')}"><div class="card-h"><div><div class="card-id">${a.rfqNum}</div><div style="font-size:13px;font-weight:500;margin-top:2px;">${cleanDesc(a.itemDesc)}</div></div><span class="chip ${a.urgency==='RED'?'chip-r':a.urgency==='ORANGE'?'chip-o':'chip-b'}">${a.urgency==='RED'?'URGENT':a.urgency==='ORANGE'?'PRIORITY':'PENDING'}</span></div>
 <div class="card-b"><div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Manager selected: <strong>${sel.vendorName||'—'}</strong> — ${sel.rank||''} — ₹${sel.rateExGST||''}</div>
 <div class="btn-row"><button class="btn btn-g" onclick="doApprove(${i})">✓ Approve → Send for PO Review</button></div></div></div>`;
     }).join('');
@@ -888,9 +891,9 @@ async function loadPOReviews(){
   try{const r=await api({action:'getPOReviews'});
     if(!r.ok||!r.reviews||!r.reviews.length){el.innerHTML='<div class="em">No POs to review</div>';setBdg('b-porev',0);return;}
     setBdg('b-porev',r.reviews.length);S.poRevStore=r.reviews;
-    el.innerHTML=r.reviews.map((po,i)=>`<div class="pr-card" onclick="openPOReview(${i})">
-<div class="pr-num">${po.poNum} · ${po.poDate}</div>
-<div class="pr-desc">${po.itemDesc}</div>
+    el.innerHTML=r.reviews.map((po,i)=>`<div class="pr-card ${urgClass(po.urgency||'')} " onclick="openPOReview(${i})">
+<div class="pr-num">${po.poNum} · ${fmtISODate(po.poDate)}</div>
+<div class="pr-desc">${cleanDesc(po.itemDesc)}</div>
 <div class="pr-meta">${po.vendorName} · ₹${fmtINR(po.rateExGST)} × ${po.qty} · Total: ₹${fmtINR(po.totalAmt)}</div>
 </div>`).join('');
   }catch(e){el.innerHTML='<div class="em">Error.</div>';}
@@ -917,9 +920,9 @@ async function loadFinalReleases(){
   try{const r=await api({action:'getFinalReleases'});
     if(!r.ok||!r.pos||!r.pos.length){el.innerHTML='<div class="em">Nothing to release</div>';setBdg('b-rel',0);return;}
     setBdg('b-rel',r.pos.length);S.relStore=r.pos;
-    el.innerHTML=r.pos.map((po,i)=>`<div class="pr-card" onclick="openFinalRelease(${i})">
-<div class="pr-num">${po.poNum} · ${po.poDate}</div>
-<div class="pr-desc">${po.itemDesc}</div>
+    el.innerHTML=r.pos.map((po,i)=>`<div class="pr-card ${urgClass(po.urgency||'')} " onclick="openFinalRelease(${i})">
+<div class="pr-num">${po.poNum} · ${fmtISODate(po.poDate)}</div>
+<div class="pr-desc">${cleanDesc(po.itemDesc)}</div>
 <div class="pr-meta">${po.vendorName} · ₹${fmtINR(po.totalAmt)}</div>
 ${po.reviewerComments?`<div style="margin-top:6px;padding:6px 8px;background:#EFF6FF;border-radius:4px;font-size:11px;color:#1D4ED8;">💬 ${esc(po.reviewerComments)} — ${po.reviewedBy||''}</div>`:''}
 </div>`).join('');
@@ -948,7 +951,7 @@ function buildPOHTML(po,showReviewerComments){
   const isIGST=(po.vendorGstin||'').substring(0,2)!=='27';
   const cgst=isIGST?0:gstAmt/2,sgst=isIGST?0:gstAmt/2,igst=isIGST?gstAmt:0;
   const net=taxable+gstAmt;
-  const delivDate=po.deliveryBy||fmtDate(new Date(Date.now()+(parseInt(po.deliveryDays||7))*86400000));
+  const delivDate=fmtISODate(po.deliveryBy)||fmtDate(new Date(Date.now()+(parseInt(po.deliveryDays||7))*86400000));
   let h=`<div style="font-family:Arial,sans-serif;font-size:11px;border:1px solid #ccc;border-radius:4px;overflow:hidden;">
 <div style="background:#1a1a1a;color:#fff;padding:10px 12px;"><div style="font-size:13px;font-weight:700;">VARSHA FORGINGS PRIVATE LIMITED</div>
 <div style="font-size:10px;opacity:.7;">B-7, MIDC Waluj, Aurangabad - 431136 · GSTIN: 27AAACV9485B1Z4</div></div>
@@ -956,10 +959,10 @@ function buildPOHTML(po,showReviewerComments){
 <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #ddd;">
 <div style="padding:8px 10px;border-right:1px solid #ddd;"><div style="color:#888;font-size:9px;">TO (VENDOR)</div><div style="font-weight:700;font-size:12px;">${po.vendorName||'—'}</div><div style="color:#555;">GSTIN: ${po.vendorGstin||'—'}</div></div>
 <div style="padding:8px 10px;"><div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span style="color:#888;">PO No.</span><span style="font-weight:700;color:#F07820;">${po.poNum}</span></div>
-<div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span style="color:#888;">Date</span><span>${po.poDate||fmtDate()}</span></div>
+<div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span style="color:#888;">Date</span><span>${fmtISODate(po.poDate)||fmtDate()}</span></div>
 <div style="display:flex;justify-content:space-between;"><span style="color:#888;">Delivery</span><span style="font-weight:600;">${delivDate}</span></div></div></div>
 <table style="width:100%;border-collapse:collapse;"><tr style="background:#f5f5f5;"><th style="padding:5px 6px;text-align:left;font-size:9px;border-bottom:1px solid #ddd;">#</th><th style="padding:5px 6px;text-align:left;font-size:9px;border-bottom:1px solid #ddd;">Item</th><th style="padding:5px 6px;text-align:center;font-size:9px;border-bottom:1px solid #ddd;">Qty</th><th style="padding:5px 6px;text-align:right;font-size:9px;border-bottom:1px solid #ddd;">Rate</th><th style="padding:5px 6px;text-align:right;font-size:9px;border-bottom:1px solid #ddd;">Total</th></tr>
-<tr><td style="padding:6px;border-bottom:1px solid #eee;">1</td><td style="padding:6px;border-bottom:1px solid #eee;"><div style="font-weight:600;">${po.itemDesc||'—'}</div><div style="color:#888;font-size:10px;">${po.itemCode||''} ${po.brand?'· '+po.brand:''}</div></td>
+<tr><td style="padding:6px;border-bottom:1px solid #eee;">1</td><td style="padding:6px;border-bottom:1px solid #eee;"><div style="font-weight:600;">${cleanDesc(po.itemDesc)}</div><div style="color:#888;font-size:10px;">${po.itemCode||''} ${po.brand?'· '+po.brand:''}</div></td>
 <td style="padding:6px;text-align:center;border-bottom:1px solid #eee;">${po.qty} ${po.uom||''}</td>
 <td style="padding:6px;text-align:right;border-bottom:1px solid #eee;font-family:monospace;">₹${fmtINR(rate)}</td>
 <td style="padding:6px;text-align:right;border-bottom:1px solid #eee;font-family:monospace;">₹${fmtINR(taxable)}</td></tr></table>
@@ -990,12 +993,25 @@ async function loadDCEntry(){
     const pending=r.pos.filter(p=>['PO_ISSUED','PARTIAL_DELIVERY'].includes(p.status));
     setBdg('b-dc',pending.length);
     if(!pending.length){el.innerHTML='<div class="em">No POs pending delivery</div>';return;}
+    S._dcPending=pending;
     el.innerHTML=pending.map(po=>`<div class="grn-po">
 <div style="display:flex;justify-content:space-between;"><div style="font-family:var(--mono);font-size:11px;font-weight:600;">${po.poNum}</div><span class="chip chip-b">${po.status.replace(/_/g,' ')}</span></div>
-<div style="font-size:13px;font-weight:500;margin:4px 0;">${po.itemDesc}</div>
+<div style="font-size:13px;font-weight:500;margin:4px 0;">${cleanDesc(po.itemDesc)}</div>
 <div style="font-size:11px;color:var(--muted);">${po.vendorName} · Qty: ${po.qty} ${po.uom}</div>
-<button class="btn btn-p btn-sm" style="width:100%;margin-top:8px;" onclick="openDC('${po.poNum}',${po.qty},'${po.uom}','${esc(po.itemDesc)}')">Record DC →</button></div>`).join('');
+<button class="btn btn-p btn-sm" style="width:100%;margin-top:8px;" onclick="openDCIdx(${pending.indexOf(po)})">Record DC →</button></div>`).join('');
   }catch(e){el.innerHTML='<div class="em">Error.</div>';}
+}
+function openDCIdx(i){
+  const pending=S._dcPending||[];
+  const po=pending[i];if(!po)return;
+  S.actDC={poNum:po.poNum,qty:po.qty,uom:po.uom};S.dcPhoto='';
+  document.getElementById('dcShTt').textContent='DC — '+po.poNum;
+  document.getElementById('dcShBd').innerHTML='<div style="font-size:11px;color:var(--muted);">PO: '+po.poNum+' · '+cleanDesc(po.itemDesc)+'</div>';
+  document.getElementById('dc-poqty').value=po.qty+' '+po.uom;
+  document.getElementById('dc-num').value='';document.getElementById('dc-qty').value='';document.getElementById('dc-rem').value='';
+  document.getElementById('dc-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('dc-photo-st').textContent='Upload DC photo to Drive, then Fetch Link';
+  osh('dcSh');
 }
 function openDC(poNum,qty,uom,desc){
   S.actDC={poNum,qty,uom};S.dcPhoto='';
@@ -1046,8 +1062,8 @@ async function loadGRNGen(){
     setBdg('b-grn',r.dcs.length);
     el.innerHTML=r.dcs.map((dc,i)=>`<div class="pr-card" onclick="openGRNGen(${i})">
 <div class="pr-num">DC: ${dc.dcNumber} · PO: ${dc.poNum}</div>
-<div class="pr-desc">${dc.itemDesc}</div>
-<div class="pr-meta">${dc.vendorName} · Rcvd: ${dc.rcvdQty} · DC Date: ${dc.dcDate}</div>
+<div class="pr-desc">${cleanDesc(dc.itemDesc)}</div>
+<div class="pr-meta">${dc.vendorName} · Rcvd: ${dc.rcvdQty} · DC Date: ${fmtISODate(dc.dcDate)}</div>
 ${dc.photoLink?`<a href="${dc.photoLink}" target="_blank" style="font-size:10px;color:#3B82F6;">📷 View DC Photo</a>`:''}
 </div>`).join('');
     S._dcStore=r.dcs;
@@ -1059,7 +1075,7 @@ function openGRNGen(idx){
 <div class="idr"><span class="idy">DC Number</span><span class="idv">${dc.dcNumber}</span></div>
 <div class="idr"><span class="idy">PO Number</span><span class="idv">${dc.poNum}</span></div>
 <div class="idr"><span class="idy">Vendor</span><span class="idv">${dc.vendorName}</span></div>
-<div class="idr"><span class="idy">Item</span><span class="idv" style="font-family:var(--sans);font-size:11px;">${dc.itemDesc}</span></div>
+<div class="idr"><span class="idy">Item</span><span class="idv" style="font-family:var(--sans);font-size:11px;">${cleanDesc(dc.itemDesc)}</span></div>
 <div class="idr"><span class="idy">Qty Received</span><span class="idv">${dc.rcvdQty}</span></div>
 </div><div style="padding:8px 10px;background:#FFFBEB;border:1px solid #FCD34D;border-radius:var(--r);font-size:11px;color:#92400E;">GRN number will be auto-assigned by system. GRN PDF saved to Drive and emailed.</div>`;
   osh('grnGenSh');
@@ -1082,7 +1098,7 @@ async function loadQC(){
     if(!grns.length){el.innerHTML='<div class="em">No items pending QC</div>';return;}
     el.innerHTML=grns.map(g=>`<div class="pr-card">
 <div class="pr-num">${g.grnNum} · ${g.grnDate}</div>
-<div class="pr-desc">${g.itemDesc}</div>
+<div class="pr-desc">${cleanDesc(g.itemDesc)}</div>
 <div class="pr-meta">PO: ${g.poNum} · ${g.rcvdQty} rcvd · ${g.vendorName}</div>
 <div class="btn-row" style="margin-top:8px;">
 <button class="btn btn-sm btn-g" style="flex:1;" onclick="doQCPass('${g.grnNum}','${g.poNum}')">✓ Pass</button>
