@@ -1,0 +1,46 @@
+name: Sync to Notion Brain
+
+on:
+  push:
+    branches:
+      - main
+      - 'claude/**'
+    paths:
+      - 'README.md'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Detect changed files
+        id: changes
+        run: |
+          CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | tr '\n' ' ')
+          if [ -z "$CHANGED" ]; then
+            CHANGED=$(git show --name-only --format="" HEAD | tr '\n' ' ')
+          fi
+          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+          echo "Changed files: $CHANGED"
+
+      - name: Sync README.md → Notion (VFPL Procurement page)
+        if: contains(steps.changes.outputs.changed, 'README.md')
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+        run: |
+          python scripts/sync_notion.py \
+            --file README.md \
+            --page 3c8c4f944b938149b3cdd0d8a77c84e5
